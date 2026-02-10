@@ -1,0 +1,248 @@
+{
+  "last_node_id": 15,
+  "last_link_id": 18,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [50, 100],
+      "size": [315, 98],
+      "properties": {
+        "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": [
+        "architectureExterior_v20.safetensors"
+      ],
+      "title": "Load Architecture Model"
+    },
+    {
+      "id": 2,
+      "type": "CLIPTextEncode",
+      "pos": [450, 50],
+      "size": [420, 164],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "modern luxury coastal home, 625 Ocean Street Satellite Beach Florida, two-story oceanfront property, rooftop pool deck with infinity edge pool, contemporary architecture, white stucco exterior, large glass windows, palm trees, tropical landscaping, golden hour lighting, photorealistic architectural rendering, 8k, ultra detailed, professional architectural photography"
+      ],
+      "title": "✅ Positive Prompt (Architecture)"
+    },
+    {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "pos": [450, 280],
+      "size": [420, 164],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blurry, low quality, distorted, ugly, deformed, cartoon, anime, sketch, drawing, painting, watermark, text, signature, low resolution, oversaturated, unrealistic proportions, bad architecture, impossible geometry, floating objects"
+      ],
+      "title": "❌ Negative Prompt"
+    },
+    {
+      "id": 4,
+      "type": "ControlNetLoader",
+      "pos": [50, 350],
+      "size": [315, 58],
+      "properties": {
+        "Node name for S&R": "ControlNetLoader"
+      },
+      "widgets_values": [
+        "control_v11p_sd15_mlsd.pth"
+      ],
+      "title": "Load ControlNet MLSD (Straight Lines)"
+    },
+    {
+      "id": 5,
+      "type": "LoadImage",
+      "pos": [50, 500],
+      "size": [315, 314],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "625_ocean_street_floorplan.png",
+        "image"
+      ],
+      "title": "📐 Upload Floor Plan Image"
+    },
+    {
+      "id": 6,
+      "type": "AIO_Preprocessor",
+      "pos": [450, 500],
+      "size": [315, 82],
+      "properties": {
+        "Node name for S&R": "AIO_Preprocessor"
+      },
+      "widgets_values": [
+        "MiDaS-DepthMapPreprocessor",
+        1024
+      ],
+      "title": "Depth Preprocessor (Alternative)"
+    },
+    {
+      "id": 7,
+      "type": "ControlNetApplyAdvanced",
+      "pos": [450, 650],
+      "size": [315, 186],
+      "properties": {
+        "Node name for S&R": "ControlNetApplyAdvanced"
+      },
+      "widgets_values": [
+        0.85,
+        0.0,
+        0.95
+      ],
+      "title": "Apply ControlNet to Floor Plan"
+    },
+    {
+      "id": 8,
+      "type": "EmptyLatentImage",
+      "pos": [50, 900],
+      "size": [315, 106],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1024,
+        768,
+        1
+      ],
+      "title": "Image Size (1024x768 Landscape)"
+    },
+    {
+      "id": 9,
+      "type": "KSampler",
+      "pos": [850, 300],
+      "size": [315, 262],
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        42,
+        "fixed",
+        30,
+        7.5,
+        "dpmpp_2m_sde",
+        "karras",
+        1.0
+      ],
+      "title": "🎰 Sampler (Architecture Optimized)"
+    },
+    {
+      "id": 10,
+      "type": "VAEDecode",
+      "pos": [1250, 350],
+      "size": [210, 46],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "title": "Decode Image"
+    },
+    {
+      "id": 11,
+      "type": "SaveImage",
+      "pos": [1250, 500],
+      "size": [315, 270],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "625_OceanSt_Render"
+      ],
+      "title": "💾 Save Render"
+    },
+    {
+      "id": 12,
+      "type": "UpscaleModelLoader",
+      "pos": [1250, 100],
+      "size": [315, 58],
+      "properties": {
+        "Node name for S&R": "UpscaleModelLoader"
+      },
+      "widgets_values": [
+        "4x-UltraSharp.pth"
+      ],
+      "title": "Load Upscaler (Optional 4x)"
+    },
+    {
+      "id": 13,
+      "type": "ImageUpscaleWithModel",
+      "pos": [1600, 200],
+      "size": [315, 58],
+      "properties": {
+        "Node name for S&R": "ImageUpscaleWithModel"
+      },
+      "title": "Upscale 4x (Optional)"
+    },
+    {
+      "id": 14,
+      "type": "SaveImage",
+      "pos": [1600, 350],
+      "size": [315, 270],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "625_OceanSt_Render_4K"
+      ],
+      "title": "💾 Save 4K Upscaled Render"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "CLIP"],
+    [2, 1, 0, 3, 0, "CLIP"],
+    [3, 1, 0, 9, 0, "MODEL"],
+    [4, 2, 0, 7, 0, "CONDITIONING"],
+    [5, 3, 0, 7, 1, "CONDITIONING"],
+    [6, 4, 0, 7, 2, "CONTROL_NET"],
+    [7, 5, 0, 7, 3, "IMAGE"],
+    [8, 7, 0, 9, 1, "CONDITIONING"],
+    [9, 7, 1, 9, 2, "CONDITIONING"],
+    [10, 8, 0, 9, 3, "LATENT"],
+    [11, 9, 0, 10, 0, "LATENT"],
+    [12, 1, 2, 10, 1, "VAE"],
+    [13, 10, 0, 11, 0, "IMAGE"],
+    [14, 12, 0, 13, 0, "UPSCALE_MODEL"],
+    [15, 10, 0, 13, 1, "IMAGE"],
+    [16, 13, 0, 14, 0, "IMAGE"]
+  ],
+  "groups": [
+    {
+      "title": "📐 Floor Plan Input + ControlNet",
+      "bounding": [30, 320, 700, 550],
+      "color": "#3b82f6"
+    },
+    {
+      "title": "✍️ Prompts",
+      "bounding": [430, 20, 450, 440],
+      "color": "#10b981"
+    },
+    {
+      "title": "🎨 Generate + Save",
+      "bounding": [830, 70, 760, 740],
+      "color": "#f59e0b"
+    },
+    {
+      "title": "🔍 4K Upscale (Optional)",
+      "bounding": [1580, 70, 360, 580],
+      "color": "#8b5cf6"
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7,
+      "offset": [0, 0]
+    },
+    "info": {
+      "name": "625 Ocean Street Architecture Rendering Pipeline",
+      "author": "BidDeed.AI / Everest Capital USA",
+      "description": "ComfyUI workflow for generating photorealistic architectural renders from floor plan images using ControlNet MLSD. Optimized for coastal Florida residential properties.",
+      "version": "1.0",
+      "created": "2026-02-10"
+    }
+  }
+}

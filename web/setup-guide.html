@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture Rendering Pipeline Setup — 625 Ocean Street</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #010409;
+  --surface: #0d1117;
+  --surface2: #161b22;
+  --border: #21262d;
+  --text: #e6edf3;
+  --text2: #c9d1d9;
+  --muted: #8b949e;
+  --dim: #484f58;
+  --green: #10b981;
+  --blue: #58a6ff;
+  --amber: #f59e0b;
+  --purple: #8b5cf6;
+  --red: #f87171;
+  --cyan: #06b6d4;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  line-height: 1.6;
+  padding: 24px 16px;
+}
+.container { max-width: 860px; margin: 0 auto; }
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 32px 24px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.header .tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+  padding: 4px 14px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.header p { color: var(--muted); font-size: 14px; }
+
+/* Progress */
+.progress-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  position: sticky;
+  top: 8px;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.progress-bar .label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.progress-bar .label span { font-size: 13px; color: var(--muted); }
+.progress-bar .label strong { font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 14px; }
+.progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+.tab {
+  flex: 1;
+  padding: 12px 16px;
+  text-align: center;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  transition: all 0.3s;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.tab:hover { color: var(--text2); background: var(--surface2); }
+.tab.active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(88, 166, 255, 0.15));
+  color: var(--green);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Sections */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 18px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: background 0.2s;
+}
+.section-header:hover { background: var(--surface2); }
+.section-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.section-header h3 { font-size: 15px; font-weight: 700; flex: 1; }
+.section-header .time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+.section-header .arrow {
+  font-size: 14px;
+  color: var(--dim);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+.section.open .arrow { transform: rotate(180deg); }
+.section-body {
+  padding: 0 20px 20px;
+  display: none;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.section.open .section-body { display: block; }
+
+/* Task items */
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(33, 38, 45, 0.5);
+}
+.task:last-child { border-bottom: none; }
+.task input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--dim);
+  border-radius: 6px;
+  flex-shrink: 0;
+  cursor: pointer;
+  margin-top: 2px;
+  transition: all 0.2s;
+  position: relative;
+}
+.task input[type="checkbox"]:checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+.task input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+.task label {
+  font-size: 14px;
+  color: var(--text2);
+  cursor: pointer;
+  flex: 1;
+}
+.task.done label { text-decoration: line-through; color: var(--dim); }
+
+/* Code blocks */
+.code-block {
+  position: relative;
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+.code-block .lang {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(33, 38, 45, 0.6);
+  border-bottom: 1px solid var(--border);
+}
+.code-block .lang span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.copy-btn {
+  background: rgba(88, 166, 255, 0.1);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  color: var(--blue);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.copy-btn:hover { background: rgba(88, 166, 255, 0.2); }
+.copy-btn.copied { background: rgba(16, 185, 129, 0.2); color: var(--green); border-color: rgba(16, 185, 129, 0.3); }
+.code-block pre {
+  padding: 14px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text2);
+}
+.code-block pre .comment { color: var(--dim); }
+.code-block pre .cmd { color: var(--green); }
+.code-block pre .flag { color: var(--amber); }
+.code-block pre .url { color: var(--blue); }
+
+/* Info boxes */
+.info-box {
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.info-box.tip { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); color: var(--green); }
+.info-box.warn { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--amber); }
+.info-box.critical { background: rgba(248, 113, 113, 0.08); border: 1px solid rgba(248, 113, 113, 0.2); color: var(--red); }
+.info-box strong { display: block; margin-bottom: 4px; }
+
+/* Links */
+a {
+  color: var(--blue);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(88, 166, 255, 0.3);
+  transition: all 0.2s;
+}
+a:hover { border-bottom-style: solid; color: #79c0ff; }
+
+/* Badge */
+.badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
+}
+.badge.rec { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+.badge.alt { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
+.badge.opt { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+
+/* Decision box */
+.decision {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(88, 166, 255, 0.06));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.decision h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.decision-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.decision-card {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.decision-card:hover { border-color: var(--green); }
+.decision-card.selected { border-color: var(--green); box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+.decision-card h4 {
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.decision-card p { font-size: 12px; color: var(--muted); }
+
+/* Prompt library */
+.prompt-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 8px 0;
+}
+.prompt-card .prompt-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.prompt-card .prompt-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.prompt-card .prompt-text:hover { color: var(--text); }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .decision-grid { grid-template-columns: 1fr; }
+  .tabs { flex-wrap: wrap; }
+  .tab { min-width: 45%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div class="tag">Setup Guide</div>
+  <h1>AI Rendering Pipeline</h1>
+  <p>ComfyUI + A1111 + ControlNet → Photorealistic renders for 625 Ocean Street</p>
+  <p style="margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim)">
+    Est. setup time: 30-45 min (GPU required) • Cost: $0
+  </p>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-bar">
+  <div class="label">
+    <span>Setup Progress</span>
+    <strong id="progressText">0 / 24 tasks</strong>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<!-- Decision: Which tool -->
+<div class="decision">
+  <h3>🎯 PICK YOUR PATH</h3>
+  <div class="decision-grid">
+    <div class="decision-card selected" onclick="selectPath('comfyui')">
+      <h4>🟢 ComfyUI <span class="badge rec">recommended</span></h4>
+      <p>Node-based, most powerful, latest model support (Flux/SDXL). Best renders but steeper learning curve. 89K+ ⭐</p>
+    </div>
+    <div class="decision-card" onclick="selectPath('a1111')">
+      <h4>🔵 A1111 WebUI <span class="badge alt">easier</span></h4>
+      <p>Traditional interface, beginner-friendly. 145K+ ⭐. Same ControlNet capability, simpler setup. Use Forge fork for speed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('install')">⚙️ Install</button>
+  <button class="tab" onclick="switchTab('models')">📦 Models</button>
+  <button class="tab" onclick="switchTab('workflow')">🔧 Workflow</button>
+  <button class="tab" onclick="switchTab('prompts')">✍️ Prompts</button>
+</div>
+
+<!-- ==================== TAB: INSTALL ==================== -->
+<div class="tab-content active" id="tab-install">
+
+<!-- Section 1: Prerequisites -->
+<div class="section open">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="section-num" style="background:rgba(248,113,113,0.12);color:var(--red)">0</div>
+    <h3>Prerequisites Check</h3>
+    <span class="time">~2 min</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-box critical">
+      <strong>⚠️ GPU REQUIRED</strong>
+      You need an NVIDIA GPU with minimum 4GB VRAM (8GB+ recommended for SDXL/Flux). AMD GPUs work with ROCm but are more complex.
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t0-1" onchange="updateProgress()">
+      <label for="t0-1">Verify NVIDIA GPU: Open terminal → type <code>nvidia-smi</code> → confirm GPU detected with VRAM amount</label>
+    </div>
+    <div class="code-block">
+      <div class="lang"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cmd">nvidia-smi</span></pre>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t0-2" onchange="updateProgress()">
+      <label for="t0-2">Confirm Python 3.12+ installed: <code>python --version</code> or <code>python3 --version</code></label>
+    </div>
+    <div class="code-block">
+      <div class="lang"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cmd">python3</span> <span class="flag">--version</span></pre>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t0-3" onchange="updateProgress()">
+      <label for="t0-3">Confirm Git installed: <code>git --version</code></label>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t0-4" onchange="updateProgress()">
+      <label for="t0-4">Ensure ~20GB free disk space for models + application</label>
+    </div>
+
+    <div class="info-box tip">
+      <strong>💡 Windows Users</strong>
+      Install <a href="https://www.python.org/downloads/" target="_blank">Python 3.12+</a> and <a href="https://git-scm.com/download/win" target="_blank">Git for Windows</a> first. Check "Add to PATH" during Python install.
+    </div>
+  </div>
+</div>
+
+<!-- Section 2: ComfyUI Install -->
+<div class="section" id="sec-comfyui-install">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="section-num" style="background:rgba(16,185,129,0.12);color:var(--green)">1</div>
+    <h3>Install ComfyUI <span class="badge rec">recommended</span></h3>
+    <span class="time">~10 min</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-box tip">
+      <strong>🚀 Fastest Method: Pre-Built Package (Windows)</strong>
+      Download the portable package — no Python/Git setup needed. Just extract and run.
+    </div>
+
+    <h4 style="color:var(--green);margin:16px 0 8px;font-size:14px;">Option A: Portable Package (Windows) — Fastest</h4>
+    <div class="task">
+      <input type="checkbox" id="t1-1" onchange="updateProgress()">
+      <label for="t1-1">Download latest ComfyUI portable from <a href="https://github.com/comfyanonymous/ComfyUI/releases" target="_blank">github.com/comfyanonymous/ComfyUI/releases</a></label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t1-2" onchange="updateProgress()">
+      <label for="t1-2">Extract with 7-Zip to a folder (e.g., <code>C:\ComfyUI</code>)</label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t1-3" onchange="updateProgress()">
+      <label for="t1-3">Double-click <code>run_nvidia_gpu.bat</code> — browser opens to <code>http://127.0.0.1:8188</code></label>
+    </div>
+
+    <h4 style="color:var(--blue);margin:16px 0 8px;font-size:14px;">Option B: Git Clone (All platforms)</h4>
+    <div class="code-block">
+      <div class="lang"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="comment"># Clone ComfyUI</span>
+<span class="cmd">git clone</span> <span class="url">https://github.com/comfyanonymous/ComfyUI.git</span>
+<span class="cmd">cd</span> ComfyUI
+
+<span class="comment"># Install dependencies</span>
+<span class="cmd">pip install</span> <span class="flag">-r</span> requirements.txt
+
+<span class="comment"># Install PyTorch with CUDA (NVIDIA)</span>
+<span class="cmd">pip install</span> torch torchvision torchaudio <span class="flag">--index-url</span> <span class="url">https://download.pytorch.org/whl/cu124</span>
+
+<span class="comment"># Launch</span>
+<span class="cmd">python</span> main.py</pre>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t1-4" onchange="updateProgress()">
+      <label for="t1-4">ComfyUI running → browser shows node interface at <code>http://127.0.0.1:8188</code></label>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⏱ Low VRAM (4-6GB)?</strong>
+      Launch with: <code>python main.py --lowvram</code> — enables smart model offloading.
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: A1111 Install -->
+<div class="section" id="sec-a1111-install">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="section-num" style="background:rgba(88,166,255,0.12);color:var(--blue)">1</div>
+    <h3>Install A1111 WebUI (Forge) <span class="badge alt">alternative</span></h3>
+    <span class="time">~10 min</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+    <div class="info-box tip">
+      <strong>💡 Use Forge Fork</strong>
+      Forge = A1111 + speed optimizations + better ControlNet support. Built by ControlNet's creator.
+    </div>
+
+    <h4 style="color:var(--blue);margin:16px 0 8px;font-size:14px;">Windows One-Click Install</h4>
+    <div class="task">
+      <input type="checkbox" id="t2-1" onchange="updateProgress()">
+      <label for="t2-1">Download Forge from <a href="https://github.com/lllyasviel/stable-diffusion-webui-forge" target="_blank">github.com/lllyasviel/stable-diffusion-webui-forge</a></label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t2-2" onchange="updateProgress()">
+      <label for="t2-2">Extract → Run <code>webui-user.bat</code> (first run downloads dependencies ~5min)</label>
+    </div>
+
+    <h4 style="color:var(--purple);margin:16px 0 8px;font-size:14px;">Manual Install (All platforms)</h4>
+    <div class="code-block">
+      <div class="lang"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="comment"># Clone Forge (recommended A1111 fork)</span>
+<span class="cmd">git clone</span> <span class="url">https://github.com/lllyasviel/stable-diffusion-webui-forge.git</span>
+<span class="cmd">cd</span> stable-diffusion-webui-forge
+
+<span class="comment"># Launch (auto-installs dependencies on first run)</span>
+<span class="cmd">bash</span> webui.sh    <span class="comment"># Linux/Mac</span>
+<span class="cmd">webui-user.bat</span>  <span class="comment"># Windows</span></pre>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t2-3" onchange="updateProgress()">
+      <label for="t2-3">A1111 Forge running → browser shows at <code>http://127.0.0.1:7860</code></label>
+    </div>
+
+    <h4 style="color:var(--green);margin:16px 0 8px;font-size:14px;">Install ControlNet Extension</h4>
+    <div class="task">
+      <input type="checkbox" id="t2-4" onchange="updateProgress()">
+      <label for="t2-4">In A1111: Go to <strong>Extensions</strong> tab → <strong>Install from URL</strong></label>
+    </div>
+    <div class="code-block">
+      <div class="lang"><span>extension url</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="url">https://github.com/Mikubill/sd-webui-controlnet.git</span></pre>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t2-5" onchange="updateProgress()">
+      <label for="t2-5">Click <strong>Install</strong> → Restart A1111 → Confirm ControlNet section appears in txt2img/img2img</label>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: MODELS ==================== -->
+<div class="tab-content" id="tab-models">
+
+<div class="section open">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="section-num" style="background:rgba(245,158,11,0.12);color:var(--amber)">2</div>
+    <h3>Download Required Models</h3>
+    <span class="time">~15 min (download)</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="info-box warn">
+      <strong>📁 File Sizes</strong>
+      Total download: ~8-12GB depending on model choices. Ensure disk space before starting.
+    </div>
+
+    <h4 style="color:var(--green);margin:16px 0 8px;font-size:14px;">Base Model (Pick ONE)</h4>
+
+    <div class="task">
+      <input type="checkbox" id="t3-1" onchange="updateProgress()">
+      <label for="t3-1"><strong>Architecture Exterior v2.0</strong> — Fine-tuned for architecture (~2GB)
+        <br><a href="https://civitai.com/models/architecture" target="_blank">Search CivitAI for "architecture exterior"</a>
+        <br>→ Place in: <code>models/checkpoints/</code></label>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t3-2" onchange="updateProgress()">
+      <label for="t3-2"><strong>Realistic Vision v6.0</strong> — Best general photorealism (~2GB) <span class="badge alt">backup</span>
+        <br><a href="https://civitai.com/models/4201/realistic-vision-v60-b1" target="_blank">civitai.com/models/4201</a>
+        <br>→ Place in: <code>models/checkpoints/</code></label>
+    </div>
+
+    <div class="info-box tip">
+      <strong>🏗️ Architecture-Specific Models on CivitAI</strong>
+      Search for: "architecture", "interior design", "exterior render", "real estate photography". Sort by "Most Downloaded" and filter by "Checkpoint" type.
+    </div>
+
+    <h4 style="color:var(--blue);margin:16px 0 8px;font-size:14px;">ControlNet Models (CRITICAL)</h4>
+
+    <div class="task">
+      <input type="checkbox" id="t3-3" onchange="updateProgress()">
+      <label for="t3-3"><strong>MLSD — Straight Line Detection</strong> (preserves floor plan lines) ~1.4GB
+        <br><a href="https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_mlsd.pth" target="_blank">Download control_v11p_sd15_mlsd.pth</a></label>
+    </div>
+    <div class="code-block">
+      <div class="lang"><span>model path</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="comment"># ComfyUI:</span>
+ComfyUI/models/controlnet/control_v11p_sd15_mlsd.pth
+
+<span class="comment"># A1111/Forge:</span>
+stable-diffusion-webui-forge/extensions/sd-webui-controlnet/models/control_v11p_sd15_mlsd.pth</pre>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t3-4" onchange="updateProgress()">
+      <label for="t3-4"><strong>Depth — MiDaS Depth Map</strong> (preserves spatial relationships) ~1.4GB
+        <br><a href="https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11f1p_sd15_depth.pth" target="_blank">Download control_v11f1p_sd15_depth.pth</a></label>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t3-5" onchange="updateProgress()">
+      <label for="t3-5"><strong>Canny — Edge Detection</strong> (preserves outlines) ~1.4GB <span class="badge opt">optional</span>
+        <br><a href="https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_canny.pth" target="_blank">Download control_v11p_sd15_canny.pth</a></label>
+    </div>
+
+    <h4 style="color:var(--purple);margin:16px 0 8px;font-size:14px;">Upscaler Model (Optional but Recommended)</h4>
+
+    <div class="task">
+      <input type="checkbox" id="t3-6" onchange="updateProgress()">
+      <label for="t3-6"><strong>4x-UltraSharp</strong> — Best upscaler for architecture (~67MB)
+        <br><a href="https://civitai.com/models/116225/4x-ultrasharp" target="_blank">Download from CivitAI</a>
+        <br>→ Place in: <code>models/upscale_models/</code></label>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: WORKFLOW ==================== -->
+<div class="tab-content" id="tab-workflow">
+
+<div class="section open">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="section-num" style="background:rgba(139,92,246,0.12);color:var(--purple)">3</div>
+    <h3>Load Architecture Workflow</h3>
+    <span class="time">~5 min</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="info-box tip">
+      <strong>📎 Pre-Built Workflow Included</strong>
+      A ComfyUI workflow JSON file was generated alongside this guide. Load it directly — all nodes pre-configured for 625 Ocean Street.
+    </div>
+
+    <h4 style="color:var(--green);margin:16px 0 8px;font-size:14px;">ComfyUI Workflow Setup</h4>
+
+    <div class="task">
+      <input type="checkbox" id="t4-1" onchange="updateProgress()">
+      <label for="t4-1">Download the <code>comfyui-architecture-workflow.json</code> file (provided with this guide)</label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t4-2" onchange="updateProgress()">
+      <label for="t4-2">In ComfyUI: Click <strong>Load</strong> button (top menu) → Select the JSON file</label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t4-3" onchange="updateProgress()">
+      <label for="t4-3">Update the <strong>Load Architecture Model</strong> node → select your downloaded checkpoint</label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t4-4" onchange="updateProgress()">
+      <label for="t4-4">In the <strong>📐 Upload Floor Plan Image</strong> node → upload your 625 Ocean Street floor plan</label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t4-5" onchange="updateProgress()">
+      <label for="t4-5">Click <strong>Queue Prompt</strong> → Wait for render (30-120 seconds depending on GPU)</label>
+    </div>
+
+    <h4 style="color:var(--blue);margin:16px 0 8px;font-size:14px;">A1111 Forge Workflow</h4>
+
+    <div class="task">
+      <input type="checkbox" id="t5-1" onchange="updateProgress()">
+      <label for="t5-1">Go to <strong>txt2img</strong> tab → Paste architecture prompt from Prompts tab</label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t5-2" onchange="updateProgress()">
+      <label for="t5-2">Scroll to <strong>ControlNet</strong> section → Check <strong>Enable</strong></label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t5-3" onchange="updateProgress()">
+      <label for="t5-3">Upload floor plan image to ControlNet canvas</label>
+    </div>
+
+    <div class="info-box tip">
+      <strong>⚙️ ControlNet Settings for Architecture</strong>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:8px; color:var(--text2)">
+        Preprocessor: <strong>mlsd</strong> (or <strong>depth_midas</strong>)<br>
+        Model: <strong>control_v11p_sd15_mlsd</strong><br>
+        Control Weight: <strong>0.85</strong><br>
+        Starting Control Step: <strong>0.0</strong><br>
+        Ending Control Step: <strong>0.95</strong><br>
+        Resize Mode: <strong>Crop and Resize</strong><br>
+        Width: <strong>1024</strong> | Height: <strong>768</strong>
+      </div>
+    </div>
+
+    <div class="task">
+      <input type="checkbox" id="t5-4" onchange="updateProgress()">
+      <label for="t5-4">Set sampler settings: <strong>DPM++ 2M SDE Karras</strong>, Steps: <strong>30</strong>, CFG: <strong>7.5</strong></label>
+    </div>
+    <div class="task">
+      <input type="checkbox" id="t5-5" onchange="updateProgress()">
+      <label for="t5-5">Click <strong>Generate</strong> → First render complete! 🎉</label>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: PROMPTS ==================== -->
+<div class="tab-content" id="tab-prompts">
+
+<div class="section open">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="section-num" style="background:rgba(6,182,212,0.12);color:var(--cyan)">4</div>
+    <h3>625 Ocean Street Prompt Library</h3>
+    <span class="time">Copy & paste ready</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="info-box tip">
+      <strong>✍️ How to Use These Prompts</strong>
+      Click any prompt text to copy it. Paste directly into ComfyUI's positive prompt node or A1111's prompt field.
+      Modify details as needed — the structure is optimized for architecture models.
+    </div>
+
+    <h4 style="color:var(--green);margin:16px 0 8px;font-size:14px;">🏠 Exterior Renders</h4>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Exterior — Golden Hour Hero Shot</div>
+      <div class="prompt-text" onclick="copyText(this)">modern luxury coastal home, 625 Ocean Street Satellite Beach Florida, two-story oceanfront property, rooftop pool deck with infinity edge pool, contemporary architecture, white stucco exterior with natural stone accents, floor-to-ceiling glass windows, palm trees, tropical landscaping, golden hour warm lighting, photorealistic architectural rendering, 8k, ultra detailed, professional architectural photography, blue sky with scattered clouds, lush green lawn</div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Exterior — Twilight/Dusk Dramatic</div>
+      <div class="prompt-text" onclick="copyText(this)">luxury modern beach house, architectural exterior photograph, twilight blue hour, interior lights glowing warm through large windows, two-story contemporary design, rooftop pool with ambient LED lighting, fire pit on deck, palm trees silhouetted against sunset sky, Satellite Beach Florida oceanfront, professional real estate photography, long exposure, dramatic sky, 8k ultra detailed</div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Exterior — Aerial/Bird's Eye</div>
+      <div class="prompt-text" onclick="copyText(this)">aerial drone photograph of modern luxury coastal home, bird's eye view, rooftop pool deck clearly visible, infinity pool overlooking ocean, two-story flat roof contemporary architecture, circular driveway, palm tree lined property, Satellite Beach Florida, Atlantic Ocean in background, professional drone real estate photography, 8k, sunny day, sharp detail</div>
+    </div>
+
+    <h4 style="color:var(--blue);margin:16px 0 8px;font-size:14px;">🛋️ Interior Renders</h4>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Interior — Open Living Space</div>
+      <div class="prompt-text" onclick="copyText(this)">modern luxury home interior, open concept living room and kitchen, floor-to-ceiling ocean view windows, polished concrete floors, white walls with warm wood accents, designer furniture, large kitchen island with waterfall countertop, recessed lighting and pendant lights, coastal contemporary style, natural light flooding in, professional interior architecture photography, 8k, ultra detailed, warm tones</div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Interior — Master Bedroom Suite</div>
+      <div class="prompt-text" onclick="copyText(this)">luxury master bedroom suite, ocean view through panoramic windows, king size bed with premium linens, modern minimalist design, en-suite bathroom visible, walk-in closet, soft ambient lighting, neutral color palette with blue accents, hardwood floors, custom built-in cabinetry, professional interior design photography, 8k, peaceful morning light</div>
+    </div>
+
+    <h4 style="color:var(--purple);margin:16px 0 8px;font-size:14px;">🏊 Rooftop Pool Deck</h4>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Pool Deck — Daytime Entertaining</div>
+      <div class="prompt-text" onclick="copyText(this)">luxury rooftop pool deck, infinity edge swimming pool with integrated spa, ocean panoramic view, modern fire pit lounge area, outdoor dining space with pergola, built-in BBQ kitchen, premium deck tile flooring, glass railing with ocean view, tropical plants and palms, Satellite Beach Florida, bright sunny day, professional architectural photography, 8k ultra detailed, resort-style luxury</div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-label">Pool Deck — Evening Ambiance</div>
+      <div class="prompt-text" onclick="copyText(this)">rooftop pool deck at night, illuminated infinity pool with underwater LED lights, fire pit with dancing flames, string lights overhead, ocean in background under starry sky, modern outdoor furniture, warm ambient lighting, luxury resort atmosphere, Satellite Beach Florida rooftop, professional nighttime architectural photography, long exposure, 8k</div>
+    </div>
+
+    <h4 style="color:var(--red);margin:16px 0 8px;font-size:14px;">❌ Negative Prompt (Use for ALL renders)</h4>
+
+    <div class="prompt-card" style="border-color:rgba(248,113,113,0.3)">
+      <div class="prompt-label" style="color:var(--red)">Universal Negative Prompt</div>
+      <div class="prompt-text" onclick="copyText(this)">blurry, low quality, distorted, ugly, deformed, cartoon, anime, sketch, drawing, painting, watermark, text, signature, low resolution, oversaturated, unrealistic proportions, bad architecture, impossible geometry, floating objects, extra limbs, disfigured, mutation, poorly drawn, bad anatomy, extra fingers, fewer digits, cropped, worst quality, jpeg artifacts</div>
+    </div>
+
+    <h4 style="color:var(--amber);margin:16px 0 8px;font-size:14px;">⚙️ Optimal Generation Settings</h4>
+    <div class="code-block">
+      <div class="lang"><span>recommended settings</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="comment"># Architecture Rendering Settings</span>
+Sampler:     DPM++ 2M SDE Karras
+Steps:       30 <span class="comment">(increase to 40 for finer detail)</span>
+CFG Scale:   7.5 <span class="comment">(7-8 range best for architecture)</span>
+Width:       1024
+Height:      768 <span class="comment">(landscape for exteriors)</span>
+             768 x 1024 <span class="comment">(portrait for interiors)</span>
+Seed:        -1 <span class="comment">(random, lock a good seed to iterate)</span>
+
+<span class="comment"># ControlNet</span>
+Weight:      0.85
+Start:       0.0
+End:         0.95
+Preprocessor: mlsd <span class="comment">(exteriors) or depth_midas (interiors)</span></pre>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- Footer -->
+<div style="text-align:center;padding:24px;color:var(--dim);font-size:12px;font-family:'JetBrains Mono',monospace">
+  625 Ocean Street Rendering Pipeline • BidDeed.AI / Everest Capital USA • Feb 2026
+</div>
+
+</div>
+
+<script>
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// Section toggle
+function toggleSection(header) {
+  header.closest('.section').classList.toggle('open');
+}
+
+// Path selection
+function selectPath(path) {
+  document.querySelectorAll('.decision-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  // Show/hide relevant sections
+  const comfy = document.getElementById('sec-comfyui-install');
+  const a1111 = document.getElementById('sec-a1111-install');
+  if (path === 'comfyui') {
+    if(comfy) { comfy.style.display = 'block'; comfy.classList.add('open'); }
+    if(a1111) a1111.style.display = 'none';
+  } else {
+    if(a1111) { a1111.style.display = 'block'; a1111.classList.add('open'); }
+    if(comfy) comfy.style.display = 'none';
+  }
+}
+
+// Progress tracking
+function updateProgress() {
+  const total = document.querySelectorAll('.task input[type="checkbox"]').length;
+  const checked = document.querySelectorAll('.task input[type="checkbox"]:checked').length;
+  const pct = Math.round((checked / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = checked + ' / ' + total + ' tasks';
+  // Mark done
+  document.querySelectorAll('.task').forEach(t => {
+    const cb = t.querySelector('input[type="checkbox"]');
+    if (cb && cb.checked) t.classList.add('done');
+    else t.classList.remove('done');
+  });
+  // Save to localStorage
+  const state = {};
+  document.querySelectorAll('.task input[type="checkbox"]').forEach(cb => {
+    state[cb.id] = cb.checked;
+  });
+  try { localStorage.setItem('renderPipelineProgress', JSON.stringify(state)); } catch(e){}
+}
+
+// Load saved progress
+try {
+  const saved = JSON.parse(localStorage.getItem('renderPipelineProgress') || '{}');
+  Object.entries(saved).forEach(([id, checked]) => {
+    const cb = document.getElementById(id);
+    if (cb) cb.checked = checked;
+  });
+  updateProgress();
+} catch(e){}
+
+// Copy code
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent || pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Copy prompt text
+function copyText(el) {
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const orig = el.style.color;
+    el.style.color = 'var(--green)';
+    const label = el.previousElementSibling;
+    const origLabel = label.textContent;
+    label.textContent = '✅ COPIED!';
+    setTimeout(() => { el.style.color = orig; label.textContent = origLabel; }, 1500);
+  });
+}
+
+// Initialize: show ComfyUI by default, hide A1111
+document.addEventListener('DOMContentLoaded', () => {
+  const a1111 = document.getElementById('sec-a1111-install');
+  if(a1111) a1111.style.display = 'none';
+});
+</script>
+
+</body>
+</html>

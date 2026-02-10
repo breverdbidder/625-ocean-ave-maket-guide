@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>625 Ocean Street — 3D Architectural Rendering</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+    color: #fff;
+  }
+
+  #canvas-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  canvas { display: block; }
+
+  .overlay-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 24px 32px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+
+  .title-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+
+  .title-block p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .stats {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .stat {
+    text-align: right;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #c9a96e;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .overlay-bottom {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 20px 32px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+  }
+
+  .controls-hint {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.8;
+  }
+
+  .controls-hint kbd {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+  }
+
+  .view-buttons {
+    display: flex;
+    gap: 8px;
+    pointer-events: all;
+  }
+
+  .view-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .view-btn:hover, .view-btn.active {
+    background: rgba(201,169,110,0.2);
+    border-color: #c9a96e;
+    color: #c9a96e;
+  }
+
+  .room-label {
+    position: absolute;
+    color: #fff;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+    z-index: 5;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .loading {
+    position: fixed;
+    inset: 0;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.8s;
+  }
+
+  .loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #c9a96e;
+  }
+
+  .loading-bar {
+    width: 200px;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: #c9a96e;
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 1px;
+  }
+
+  .compass {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .time-toggle {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .time-toggle label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .toggle-switch {
+    width: 40px;
+    height: 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.3s;
+  }
+
+  .toggle-switch.night {
+    background: rgba(30,50,100,0.4);
+    border-color: rgba(100,150,255,0.3);
+  }
+
+  .toggle-switch::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background: #c9a96e;
+    border-radius: 50%;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    transition: all 0.3s;
+  }
+
+  .toggle-switch.night::after {
+    left: 21px;
+    background: #6488c9;
+  }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <h2>625 Ocean Street</h2>
+  <div class="loading-bar"><div class="loading-bar-fill" id="loadingFill"></div></div>
+</div>
+
+<div class="overlay-top">
+  <div class="title-block">
+    <h1>625 Ocean Street</h1>
+    <p>Level 1: Living &nbsp;|&nbsp; Level 2: Pool Deck &nbsp;— Interactive 3D Rendering</p>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Levels</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">1,966</div>
+      <div class="stat-label">Sq Ft Living</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">Pool</div>
+      <div class="stat-label">+ Spa Deck</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay-bottom">
+  <div>
+    <div class="controls-hint">
+      <kbd>Left Click</kbd> Orbit &nbsp; <kbd>Scroll</kbd> Zoom &nbsp; <kbd>Right Click</kbd> Pan
+    </div>
+    <div class="time-toggle">
+      <label>Day</label>
+      <div class="toggle-switch" id="timeToggle" onclick="toggleTime()"></div>
+      <label>Night</label>
+    </div>
+  </div>
+  <div class="view-buttons">
+    <button class="view-btn active" onclick="setView('perspective')">Perspective</button>
+    <button class="view-btn" onclick="setView('top')">Plan View</button>
+    <button class="view-btn" onclick="setView('pooldeck')">Pool Deck</button>
+    <button class="view-btn" onclick="setView('walkthrough')">Walkthrough</button>
+  </div>
+</div>
+
+<div id="canvas-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ===== SCENE SETUP =====
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+renderer.outputEncoding = THREE.sRGBEncoding;
+container.appendChild(renderer.domElement);
+
+// Loading
+let loadProgress = 0;
+const loadingEl = document.getElementById('loading');
+const loadingFill = document.getElementById('loadingFill');
+
+function updateLoading(p) {
+  loadProgress = p;
+  loadingFill.style.width = p + '%';
+  if (p >= 100) setTimeout(() => loadingEl.classList.add('hidden'), 400);
+}
+
+// ===== COLORS & MATERIALS =====
+const COLORS = {
+  wallExterior: 0xf5f0e8,
+  wallInterior: 0xfaf8f3,
+  floor_wood: 0xb8915a,
+  floor_tile: 0xd4cec3,
+  floor_carpet: 0x8b8478,
+  floor_garage: 0x999999,
+  ceiling: 0xfefefe,
+  trim: 0xffffff,
+  door: 0x6b4423,
+  window_frame: 0xd4d4d4,
+  window_glass: 0x87ceeb,
+  counter: 0x3a3a3a,
+  cabinet: 0xf0ead6,
+  metal: 0xc0c0c0,
+  grass: 0x5a8a3c,
+  concrete: 0xcccccc,
+  roof: 0x5a4a3a,
+  water: 0x4a90d9,
+  gold: 0xc9a96e
+};
+
+function makeMat(color, opts = {}) {
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness: opts.roughness ?? 0.7,
+    metalness: opts.metalness ?? 0.0,
+    side: opts.side ?? THREE.FrontSide,
+    transparent: opts.transparent ?? false,
+    opacity: opts.opacity ?? 1.0,
+    ...opts
+  });
+}
+
+const materials = {
+  wallExt: makeMat(COLORS.wallExterior, { roughness: 0.85 }),
+  wallInt: makeMat(COLORS.wallInterior, { roughness: 0.9 }),
+  floorWood: makeMat(COLORS.floor_wood, { roughness: 0.6 }),
+  floorTile: makeMat(COLORS.floor_tile, { roughness: 0.4 }),
+  floorCarpet: makeMat(COLORS.floor_carpet, { roughness: 0.95 }),
+  floorGarage: makeMat(COLORS.floor_garage, { roughness: 0.8 }),
+  ceiling: makeMat(COLORS.ceiling, { roughness: 0.9 }),
+  trim: makeMat(COLORS.trim, { roughness: 0.5 }),
+  door: makeMat(COLORS.door, { roughness: 0.5 }),
+  glass: makeMat(COLORS.window_glass, { roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.3 }),
+  counter: makeMat(COLORS.counter, { roughness: 0.3, metalness: 0.1 }),
+  cabinet: makeMat(COLORS.cabinet, { roughness: 0.6 }),
+  metal: makeMat(COLORS.metal, { roughness: 0.3, metalness: 0.8 }),
+  grass: makeMat(COLORS.grass, { roughness: 0.95 }),
+  concrete: makeMat(COLORS.concrete, { roughness: 0.9 }),
+  roof: makeMat(COLORS.roof, { roughness: 0.8 }),
+  water: makeMat(COLORS.water, { roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.7 }),
+  gold: makeMat(COLORS.gold, { roughness: 0.4, metalness: 0.6 })
+};
+
+updateLoading(15);
+
+// ===== UNIT: 1 unit = 1 foot =====
+const WALL_H = 10;
+const WALL_T = 0.5;
+const EXT_WALL_T = 0.8;
+
+// ===== FLOOR PLAN GEOMETRY =====
+// Based on the uploaded plan: long narrow lot, rooms left to right
+// Total approx 80ft long x 28ft wide (1,966 sqft living + garage)
+const building = new THREE.Group();
+scene.add(building);
+
+// Helper: create wall segment
+function wall(x, z, w, d, h, mat, castShadow = true) {
+  const geo = new THREE.BoxGeometry(w, h || WALL_H, d);
+  const mesh = new THREE.Mesh(geo, mat || materials.wallExt);
+  mesh.position.set(x, (h || WALL_H) / 2, z);
+  mesh.castShadow = castShadow;
+  mesh.receiveShadow = true;
+  building.add(mesh);
+  return mesh;
+}
+
+// Helper: floor slab
+function floor(x, z, w, d, mat) {
+  const geo = new THREE.BoxGeometry(w, 0.3, d);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, 0.15, z);
+  mesh.receiveShadow = true;
+  building.add(mesh);
+  return mesh;
+}
+
+// Helper: ceiling
+function ceil(x, z, w, d) {
+  const geo = new THREE.BoxGeometry(w, 0.2, d);
+  const mesh = new THREE.Mesh(geo, materials.ceiling);
+  mesh.position.set(x, WALL_H + 0.1, z);
+  mesh.receiveShadow = true;
+  building.add(mesh);
+  return mesh;
+}
+
+// Helper: window
+function addWindow(x, z, w, h, rotY) {
+  const group = new THREE.Group();
+  // Frame
+  const frameMat = materials.trim;
+  const fT = 0.15;
+  // Glass
+  const glassGeo = new THREE.BoxGeometry(w - 0.3, h - 0.3, 0.05);
+  const glass = new THREE.Mesh(glassGeo, materials.glass);
+  glass.position.y = 0;
+  group.add(glass);
+  // Frame pieces
+  const topBot = new THREE.BoxGeometry(w, fT, fT);
+  const sides = new THREE.BoxGeometry(fT, h, fT);
+  [h/2 - fT/2, -h/2 + fT/2].forEach(yy => {
+    const m = new THREE.Mesh(topBot, frameMat);
+    m.position.y = yy;
+    group.add(m);
+  });
+  [w/2 - fT/2, -w/2 + fT/2].forEach(xx => {
+    const m = new THREE.Mesh(sides, frameMat);
+    m.position.x = xx;
+    group.add(m);
+  });
+  group.position.set(x, 6, z);
+  if (rotY) group.rotation.y = rotY;
+  building.add(group);
+  return group;
+}
+
+// Helper: door
+function addDoor(x, z, w, h, rotY) {
+  const geo = new THREE.BoxGeometry(w, h || 7, 0.2);
+  const mesh = new THREE.Mesh(geo, materials.door);
+  mesh.position.set(x, (h || 7) / 2, z);
+  if (rotY) mesh.rotation.y = rotY;
+  // handle
+  const handleGeo = new THREE.SphereGeometry(0.15, 8, 8);
+  const handle = new THREE.Mesh(handleGeo, materials.metal);
+  handle.position.set(w/2 - 0.4, 0, 0.15);
+  mesh.add(handle);
+  mesh.castShadow = true;
+  building.add(mesh);
+  return mesh;
+}
+
+// ===== BUILD THE HOUSE =====
+// Room layout (left to right along X axis):
+// Garage/Storage: x=-36 to -20, z=-12 to 12 (24w x 24d)
+// Garage: x=-20 to -10, z=-8 to 8 (10w x 16d)  
+// Entry Foyer: x=-10 to -2, z=-6 to 6 (8w x 12d)
+// Rec Room: x=-2 to 12, z=-12 to 0 (14w x 12d)
+// Wet Bar/Laundry: x=-2 to 12, z=0 to 12 (14w x 12d)
+// Office: x=12 to 24, z=-12 to 0 (12w x 12d)
+// Bedroom: x=12 to 28, z=0 to 12 (16w x 12d)
+// Bathroom: x=24 to 28, z=-12 to 0 (4w x 12d)
+
+// === FLOORS ===
+floor(-28, 0, 16, 24, materials.floorGarage);   // Garage/Storage
+floor(-15, 0, 10, 16, materials.floorGarage);    // Garage
+floor(-6, 0, 8, 12, materials.floorTile);        // Entry Foyer
+floor(5, -6, 14, 12, materials.floorWood);       // Rec Room
+floor(5, 6, 14, 12, materials.floorTile);        // Wet Bar/Laundry
+floor(18, -6, 12, 12, materials.floorCarpet);    // Office
+floor(20, 6, 16, 12, materials.floorWood);       // Bedroom
+floor(26, -6, 4, 12, materials.floorTile);       // Bathroom
+
+updateLoading(30);
+
+// === CEILINGS ===
+ceil(-28, 0, 16, 24);
+ceil(-15, 0, 10, 16);
+ceil(-6, 0, 8, 12);
+ceil(5, -6, 14, 12);
+ceil(5, 6, 14, 12);
+ceil(18, -6, 12, 12);
+ceil(20, 6, 16, 12);
+ceil(26, -6, 4, 12);
+
+// === EXTERIOR WALLS ===
+// South wall (z = -12)
+wall(-20, -12, 40, EXT_WALL_T, WALL_H, materials.wallExt);
+wall(14, -12, 20, EXT_WALL_T, WALL_H, materials.wallExt);
+
+// North wall (z = 12)
+wall(-20, 12, 40, EXT_WALL_T, WALL_H, materials.wallExt);
+wall(14, 12, 20, EXT_WALL_T, WALL_H, materials.wallExt);
+
+// West wall (x = -36)
+wall(-36, 0, EXT_WALL_T, 24, WALL_H, materials.wallExt);
+
+// East wall (x = 28)
+wall(28, 0, EXT_WALL_T, 24, WALL_H, materials.wallExt);
+
+// === INTERIOR WALLS ===
+// Garage/Storage to Garage divider
+wall(-20, 0, WALL_T, 24, WALL_H, materials.wallInt);
+
+// Garage to Entry
+wall(-10, 0, WALL_T, 16, WALL_H, materials.wallInt);
+
+// Entry to Rec/Wet bar
+wall(-2, 0, WALL_T, 24, WALL_H, materials.wallInt);
+
+// Center horizontal divider (z=0) from Rec to Office
+wall(5, 0, 14, WALL_T, WALL_H, materials.wallInt);
+wall(18, 0, 12, WALL_T, WALL_H, materials.wallInt);
+
+// Office to Bedroom divider at x=12
+wall(12, 0, WALL_T, 24, WALL_H, materials.wallInt);
+
+// Bathroom wall at x=24
+wall(24, -6, WALL_T, 12, WALL_H, materials.wallInt);
+
+// Bedroom/Bathroom divider at z=0 east section
+wall(26, 0, 4, WALL_T, WALL_H, materials.wallInt);
+
+updateLoading(45);
+
+// === WINDOWS ===
+// South windows
+addWindow(-28, -12.2, 5, 4);
+addWindow(-15, -12.2, 4, 4);
+addWindow(5, -12.2, 5, 4);
+addWindow(18, -12.2, 5, 4);
+
+// North windows
+addWindow(-28, 12.2, 5, 4);
+addWindow(5, 12.2, 5, 4);
+addWindow(20, 12.2, 6, 5);  // Bedroom large window
+
+// East windows
+addWindow(28.2, 4, 5, 5, Math.PI / 2);
+addWindow(28.2, -4, 3, 3, Math.PI / 2);
+
+// West
+addWindow(-36.2, 0, 4, 3, Math.PI / 2);
+
+// === DOORS ===
+addDoor(-6, -12.3, 3.5, 7.5); // Entry front door
+addDoor(-10.2, -3, 3, 7, Math.PI / 2); // Garage to Entry
+addDoor(-2.2, -4, 3, 7, Math.PI / 2); // Entry to Rec
+addDoor(-2.2, 4, 3, 7, Math.PI / 2); // Entry to Wet Bar
+
+updateLoading(55);
+
+// ===== FURNITURE =====
+function box(x, y, z, w, h, d, mat) {
+  const geo = new THREE.BoxGeometry(w, h, d);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, y + h/2, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  building.add(mesh);
+  return mesh;
+}
+
+function cylinder(x, y, z, r, h, mat) {
+  const geo = new THREE.CylinderGeometry(r, r, h, 16);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, y + h/2, z);
+  mesh.castShadow = true;
+  building.add(mesh);
+  return mesh;
+}
+
+// -- Spiral Staircase (Garage/Storage) --
+const stairGroup = new THREE.Group();
+const stairR = 3;
+const steps = 16;
+for (let i = 0; i < steps; i++) {
+  const angle = (i / steps) * Math.PI * 2;
+  const stepGeo = new THREE.BoxGeometry(3, 0.3, 1);
+  const stepMesh = new THREE.Mesh(stepGeo, materials.floorWood);
+  stepMesh.position.set(Math.cos(angle) * 1.5, (i / steps) * WALL_H, Math.sin(angle) * 1.5);
+  stepMesh.rotation.y = -angle;
+  stepMesh.castShadow = true;
+  stairGroup.add(stepMesh);
+}
+// Central pole
+const poleGeo = new THREE.CylinderGeometry(0.15, 0.15, WALL_H, 8);
+const pole = new THREE.Mesh(poleGeo, materials.metal);
+pole.position.y = WALL_H / 2;
+stairGroup.add(pole);
+stairGroup.position.set(-30, 0.3, 5);
+building.add(stairGroup);
+
+// -- Wet Bar Counter --
+box(2, 0.3, 4, 8, 3, 1.5, materials.counter);
+// Bar stools
+for (let i = 0; i < 3; i++) {
+  cylinder(0 + i * 2.5, 0.3, 2.5, 0.4, 2, materials.metal);
+  box(0 + i * 2.5, 2.3, 2.5, 0.9, 0.15, 0.9, makeMat(0x4a3526, { roughness: 0.5 }));
+}
+
+// -- Kitchen/Wet Bar cabinets --
+box(4, 0.3, 11, 10, 3, 2, materials.cabinet);
+box(4, 3.6, 11, 10, 2.5, 1, materials.cabinet); // upper cabinets
+
+// Sink
+box(4, 3.3, 10.5, 2, 0.3, 1.5, materials.metal);
+
+// -- Laundry appliances --
+box(10, 0.3, 10, 2.5, 3, 2.5, makeMat(0xeeeeee, { roughness: 0.3, metalness: 0.4 })); // Washer
+box(10, 0.3, 7.5, 2.5, 3, 2.5, makeMat(0xdddddd, { roughness: 0.3, metalness: 0.4 })); // Dryer
+
+updateLoading(65);
+
+// -- Rec Room Furniture --
+// Sofa
+box(5, 0.3, -9, 6, 2, 3, makeMat(0x5a5a6a, { roughness: 0.85 }));
+box(5, 2.3, -10.2, 6, 1.5, 0.6, makeMat(0x5a5a6a, { roughness: 0.85 })); // back
+
+// Coffee table
+box(5, 0.3, -6.5, 4, 1.2, 2, makeMat(0x7a5c3a, { roughness: 0.5 }));
+
+// TV stand and TV
+box(5, 0.3, -2, 6, 2, 1.5, makeMat(0x3a3a3a));
+box(5, 2.5, -1.5, 5, 3, 0.15, makeMat(0x111111, { roughness: 0.2 })); // TV screen
+
+// -- Office --
+// Desk
+box(18, 0.3, -8, 6, 2.5, 2.5, makeMat(0x8b6b4a, { roughness: 0.5 }));
+// Chair
+box(18, 0.3, -5.5, 2, 1.5, 2, makeMat(0x333333, { roughness: 0.6 }));
+box(18, 1.8, -4.8, 2, 2, 0.5, makeMat(0x333333, { roughness: 0.6 })); // chair back
+
+// Bookshelf
+box(13, 0.3, -10, 1.5, 7, 5, makeMat(0x6b5040, { roughness: 0.6 }));
+
+// -- Bedroom --
+// Bed
+box(20, 0.3, 6, 6, 1.8, 8, makeMat(0xf0e6d6, { roughness: 0.9 })); // mattress
+box(20, 0.3, 10, 6, 3, 0.5, makeMat(0x6b4a2a, { roughness: 0.5 })); // headboard
+// Pillows
+box(19, 2.1, 9, 2, 0.5, 1.5, makeMat(0xffffff, { roughness: 0.9 }));
+box(21, 2.1, 9, 2, 0.5, 1.5, makeMat(0xffffff, { roughness: 0.9 }));
+// Bedspread
+box(20, 2.0, 4, 5.5, 0.3, 4, makeMat(0x3a5a7a, { roughness: 0.85 }));
+
+// Nightstands
+box(16.5, 0.3, 9, 1.5, 1.8, 1.5, makeMat(0x6b4a2a, { roughness: 0.5 }));
+box(23.5, 0.3, 9, 1.5, 1.8, 1.5, makeMat(0x6b4a2a, { roughness: 0.5 }));
+
+// Lamps on nightstands
+cylinder(16.5, 2.1, 9, 0.2, 1.5, materials.gold);
+cylinder(23.5, 2.1, 9, 0.2, 1.5, materials.gold);
+
+// Dresser
+box(14, 0.3, 6, 1.5, 3, 5, makeMat(0x6b4a2a, { roughness: 0.5 }));
+
+updateLoading(75);
+
+// -- Bathroom --
+// Toilet
+box(25.5, 0.3, -9, 1.5, 1.5, 2, makeMat(0xffffff, { roughness: 0.2 }));
+// Vanity
+box(25.5, 0.3, -4, 3, 2.8, 2, materials.cabinet);
+box(25.5, 2.8, -4, 3, 0.2, 2, materials.counter); // countertop
+// Sink basin
+cylinder(25.5, 3.0, -4, 0.5, 0.3, makeMat(0xffffff, { roughness: 0.1 }));
+// Mirror
+box(27.5, 4, -4, 0.1, 3, 2.5, makeMat(0xaabbcc, { roughness: 0.05, metalness: 0.8 }));
+
+// Shower/tub
+box(25.5, 0.3, -1.5, 3, 0.5, 3, makeMat(0xffffff, { roughness: 0.1 }));
+// Glass shower door
+box(24, 0.3, -1.5, 0.1, 6, 3, materials.glass);
+
+// -- Garage --
+// Cars placeholder
+box(-28, 0.3, -4, 7, 4, 5, makeMat(0x2a3a4a, { roughness: 0.4, metalness: 0.3 }));
+box(-28, 0.3, 4, 7, 4, 5, makeMat(0x8a2a2a, { roughness: 0.4, metalness: 0.3 }));
+
+// -- Entry Foyer --
+// Console table
+box(-6, 0.3, -2, 4, 2.5, 1, makeMat(0x6b4a2a, { roughness: 0.5 }));
+// Plant
+cylinder(-6, 2.8, -2, 0.4, 0.5, makeMat(0x5a4030));
+const plantLeaves = new THREE.Mesh(
+  new THREE.SphereGeometry(0.8, 8, 8),
+  makeMat(0x3a7a3a, { roughness: 0.9 })
+);
+plantLeaves.position.set(-6, 3.8, -2);
+building.add(plantLeaves);
+
+updateLoading(85);
+
+// ===== LEVEL 2 — POOL & POOL DECK =====
+const L2 = WALL_H + 0.3; // Level 2 floor height (top of Level 1 ceiling)
+const level2 = new THREE.Group();
+building.add(level2);
+
+// --- L2 Structural Deck Slab (full footprint over living area) ---
+// Deck spans from x=-10 to x=28, z=-14 to z=14 (wider than house for deck overhang)
+const deckMat = makeMat(0xc4a97d, { roughness: 0.7 }); // travertine/stone deck
+const deckSlabGeo = new THREE.BoxGeometry(42, 0.5, 30);
+const deckSlab = new THREE.Mesh(deckSlabGeo, deckMat);
+deckSlab.position.set(7, L2, 0);
+deckSlab.receiveShadow = true;
+deckSlab.castShadow = true;
+level2.add(deckSlab);
+
+// Also extend deck over garage/storage area (open roof deck)
+const garageDeckGeo = new THREE.BoxGeometry(18, 0.5, 26);
+const garageDeck = new THREE.Mesh(garageDeckGeo, deckMat);
+garageDeck.position.set(-27, L2, 0);
+garageDeck.receiveShadow = true;
+garageDeck.castShadow = true;
+level2.add(garageDeck);
+
+// --- Pool (Inground into Level 2 deck) ---
+// Pool basin (sunken into deck)
+const poolDepth = 4;
+const poolW = 22;
+const poolD = 10;
+const poolX = 5;
+const poolZ = 0;
+
+// Pool walls (blue tile)
+const poolTileMat = makeMat(0x1a6b9a, { roughness: 0.2 });
+const poolFloorMat = makeMat(0x0d4f73, { roughness: 0.15 });
+
+// Pool floor
+const pfGeo = new THREE.BoxGeometry(poolW, 0.3, poolD);
+const poolFloor = new THREE.Mesh(pfGeo, poolFloorMat);
+poolFloor.position.set(poolX, L2 - poolDepth + 0.15, poolZ);
+poolFloor.receiveShadow = true;
+level2.add(poolFloor);
+
+// Pool side walls
+// North wall (back)
+const pwN = new THREE.Mesh(new THREE.BoxGeometry(poolW, poolDepth, 0.3), poolTileMat);
+pwN.position.set(poolX, L2 - poolDepth/2, poolZ + poolD/2);
+level2.add(pwN);
+// South wall (front)
+const pwS = new THREE.Mesh(new THREE.BoxGeometry(poolW, poolDepth, 0.3), poolTileMat);
+pwS.position.set(poolX, L2 - poolDepth/2, poolZ - poolD/2);
+level2.add(pwS);
+// West wall
+const pwW = new THREE.Mesh(new THREE.BoxGeometry(0.3, poolDepth, poolD), poolTileMat);
+pwW.position.set(poolX - poolW/2, L2 - poolDepth/2, poolZ);
+level2.add(pwW);
+// East wall
+const pwE = new THREE.Mesh(new THREE.BoxGeometry(0.3, poolDepth, poolD), poolTileMat);
+pwE.position.set(poolX + poolW/2, L2 - poolDepth/2, poolZ);
+level2.add(pwE);
+
+// Pool water surface
+const waterGeo = new THREE.BoxGeometry(poolW - 0.4, 0.4, poolD - 0.4);
+const poolWater = new THREE.Mesh(waterGeo, makeMat(0x3aaddb, {
+  roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.65
+}));
+poolWater.position.set(poolX, L2 - 0.5, poolZ);
+poolWater.receiveShadow = true;
+level2.add(poolWater);
+
+// Pool coping (stone edge around pool)
+const copingMat = makeMat(0xe8dcc8, { roughness: 0.5 });
+const copingT = 0.8;
+const copingH = 0.4;
+// North coping
+level2.add((() => { const m = new THREE.Mesh(new THREE.BoxGeometry(poolW + copingT*2, copingH, copingT), copingMat); m.position.set(poolX, L2 + copingH/2, poolZ + poolD/2 + copingT/2); m.receiveShadow = true; return m; })());
+// South coping
+level2.add((() => { const m = new THREE.Mesh(new THREE.BoxGeometry(poolW + copingT*2, copingH, copingT), copingMat); m.position.set(poolX, L2 + copingH/2, poolZ - poolD/2 - copingT/2); m.receiveShadow = true; return m; })());
+// West coping
+level2.add((() => { const m = new THREE.Mesh(new THREE.BoxGeometry(copingT, copingH, poolD), copingMat); m.position.set(poolX - poolW/2 - copingT/2, L2 + copingH/2, poolZ); m.receiveShadow = true; return m; })());
+// East coping
+level2.add((() => { const m = new THREE.Mesh(new THREE.BoxGeometry(copingT, copingH, poolD), copingMat); m.position.set(poolX + poolW/2 + copingT/2, L2 + copingH/2, poolZ); m.receiveShadow = true; return m; })());
+
+// --- Pool Steps (shallow end, west side) ---
+for (let s = 0; s < 4; s++) {
+  const stepW = 4;
+  const stepH = poolDepth / 4;
+  const stepGeo = new THREE.BoxGeometry(stepW, stepH, poolD * 0.4);
+  const stepMesh = new THREE.Mesh(stepGeo, poolTileMat);
+  stepMesh.position.set(poolX - poolW/2 + 2 + s * 0.3, L2 - stepH/2 - s * stepH, poolZ - poolD/2 + poolD * 0.2);
+  level2.add(stepMesh);
+}
+
+// --- Pool Deck Furniture ---
+const loungerMat = makeMat(0xf5f0e8, { roughness: 0.6 });
+const cushionMat = makeMat(0xeeeeee, { roughness: 0.85 });
+const umbrellaFabricMat = makeMat(0xd4a76a, { roughness: 0.8 });
+
+function addLounger(x, z, rotY) {
+  const g = new THREE.Group();
+  // Frame
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.3, 6), loungerMat);
+  frame.position.y = 1;
+  g.add(frame);
+  // Legs
+  [[-1, -2.5], [1, -2.5], [-1, 2.5], [1, 2.5]].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1, 6), materials.metal);
+    leg.position.set(lx, 0.5, lz);
+    g.add(leg);
+  });
+  // Cushion
+  const cush = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 5.5), cushionMat);
+  cush.position.y = 1.3;
+  g.add(cush);
+  // Raised back
+  const back = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.25, 2), cushionMat);
+  back.position.set(0, 1.7, -1.8);
+  back.rotation.x = -0.4;
+  g.add(back);
+
+  g.position.set(x, L2 + 0.25, z);
+  if (rotY) g.rotation.y = rotY;
+  g.castShadow = true;
+  level2.add(g);
+  return g;
+}
+
+// Loungers along south side of pool
+addLounger(-2, -8, 0);
+addLounger(2, -8, 0);
+addLounger(6, -8, 0);
+addLounger(10, -8, 0);
+
+// Loungers along north side
+addLounger(0, 8, Math.PI);
+addLounger(4, 8, Math.PI);
+addLounger(8, 8, Math.PI);
+
+// --- Umbrellas ---
+function addUmbrella(x, z, color) {
+  const g = new THREE.Group();
+  // Pole
+  const poleMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 7, 8), materials.metal);
+  poleMesh.position.y = 3.5;
+  g.add(poleMesh);
+  // Canopy (cone)
+  const canopyGeo = new THREE.ConeGeometry(3.5, 1.5, 8, 1, true);
+  const canopyMesh = new THREE.Mesh(canopyGeo, makeMat(color || 0xd4a76a, { roughness: 0.8, side: THREE.DoubleSide }));
+  canopyMesh.position.y = 7;
+  canopyMesh.castShadow = true;
+  g.add(canopyMesh);
+
+  g.position.set(x, L2 + 0.25, z);
+  level2.add(g);
+  return g;
+}
+
+addUmbrella(0, -8, 0xc9a96e);
+addUmbrella(8, -8, 0xc9a96e);
+addUmbrella(4, 8, 0xe8dcc8);
+
+// --- Side Tables ---
+function addSideTable(x, z) {
+  const g = new THREE.Group();
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 12), makeMat(0x8b7355, { roughness: 0.4 }));
+  top.position.y = 1.6;
+  g.add(top);
+  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.6, 6), materials.metal);
+  leg.position.y = 0.8;
+  g.add(leg);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.1, 12), materials.metal);
+  base.position.y = 0.05;
+  g.add(base);
+  g.position.set(x, L2 + 0.25, z);
+  level2.add(g);
+}
+
+addSideTable(-4, -8);
+addSideTable(4, -8);
+addSideTable(12, -8);
+addSideTable(2, 8);
+addSideTable(6, 8);
+
+// --- Outdoor Dining Area (East deck) ---
+// Table
+const diningTable = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 0.2, 12), makeMat(0x7a5c3a, { roughness: 0.45 }));
+diningTable.position.set(22, L2 + 2.7, 0);
+diningTable.receiveShadow = true;
+level2.add(diningTable);
+const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 2.5, 8), materials.metal);
+tableLeg.position.set(22, L2 + 1.5, 0);
+level2.add(tableLeg);
+
+// Dining chairs
+for (let i = 0; i < 6; i++) {
+  const angle = (i / 6) * Math.PI * 2;
+  const cx = 22 + Math.cos(angle) * 3.2;
+  const cz = Math.sin(angle) * 3.2;
+  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 1.5), makeMat(0x4a4a4a, { roughness: 0.6 }));
+  chairSeat.position.set(cx, L2 + 1.5, cz);
+  level2.add(chairSeat);
+  // Legs
+  [[-0.6,-0.6],[0.6,-0.6],[-0.6,0.6],[0.6,0.6]].forEach(([lx,lz]) => {
+    const cl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.3, 4), materials.metal);
+    cl.position.set(cx+lx, L2 + 0.9, cz+lz);
+    level2.add(cl);
+  });
+  // Back
+  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 0.12), makeMat(0x4a4a4a, { roughness: 0.6 }));
+  const backX = cx + Math.cos(angle) * 0.7;
+  const backZ = cz + Math.sin(angle) * 0.7;
+  chairBack.position.set(backX, L2 + 2.3, backZ);
+  chairBack.rotation.y = -angle + Math.PI / 2;
+  level2.add(chairBack);
+}
+
+// Large umbrella over dining
+addUmbrella(22, 0, 0x8b4513);
+
+// --- Glass Railing Around Entire Deck ---
+const railMat = makeMat(0xffffff, { roughness: 0.1, metalness: 0.9 });
+const glassRailMat = makeMat(0xaaddee, { roughness: 0.05, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+const railH = 3.5;
+const railPostH = 3.5;
+
+function addRailSection(x1, z1, x2, z2) {
+  const dx = x2 - x1, dz = z2 - z1;
+  const len = Math.sqrt(dx*dx + dz*dz);
+  const midX = (x1+x2)/2, midZ = (z1+z2)/2;
+  const angle = Math.atan2(dz, dx);
+
+  // Glass panel
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(len, railH, 0.1), glassRailMat);
+  glass.position.set(midX, L2 + railH/2 + 0.25, midZ);
+  glass.rotation.y = -angle;
+  level2.add(glass);
+
+  // Top rail (metal)
+  const topRail = new THREE.Mesh(new THREE.BoxGeometry(len, 0.12, 0.2), railMat);
+  topRail.position.set(midX, L2 + railH + 0.3, midZ);
+  topRail.rotation.y = -angle;
+  level2.add(topRail);
+
+  // Posts every 6ft
+  const numPosts = Math.max(2, Math.ceil(len / 6));
+  for (let i = 0; i <= numPosts; i++) {
+    const t = i / numPosts;
+    const px = x1 + dx * t, pz = z1 + dz * t;
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, railPostH, 6), railMat);
+    post.position.set(px, L2 + railPostH/2 + 0.25, pz);
+    level2.add(post);
+  }
+}
+
+// Railing around full perimeter
+// South side
+addRailSection(-36, -13, 28, -13);
+// North side
+addRailSection(-36, 13, 28, 13);
+// West side
+addRailSection(-36, -13, -36, 13);
+// East side
+addRailSection(28, -13, 28, 13);
+
+// --- Outdoor Shower (near pool) ---
+const showerPole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 6, 6), materials.metal);
+showerPole.position.set(-8, L2 + 3.25, -3);
+level2.add(showerPole);
+const showerHead = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.15, 8), materials.metal);
+showerHead.position.set(-8, L2 + 6.25, -3);
+level2.add(showerHead);
+
+// --- Planter Boxes (along railings) ---
+const planterMat = makeMat(0x5a5a5a, { roughness: 0.7 });
+const plantMat = makeMat(0x2a7a2a, { roughness: 0.9 });
+
+function addPlanter(x, z, w, d) {
+  const planter = new THREE.Mesh(new THREE.BoxGeometry(w || 3, 2, d || 1.5), planterMat);
+  planter.position.set(x, L2 + 1.25, z);
+  level2.add(planter);
+  // Plants
+  for (let i = 0; i < 3; i++) {
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.6 + Math.random()*0.3, 8, 6), plantMat);
+    p.position.set(x - 0.8 + i * 0.8, L2 + 2.5 + Math.random()*0.3, z);
+    level2.add(p);
+  }
+}
+
+addPlanter(-34, 12, 4, 1.5);
+addPlanter(-30, 12, 4, 1.5);
+addPlanter(24, 12, 4, 1.5);
+addPlanter(-34, -12, 4, 1.5);
+addPlanter(24, -12, 4, 1.5);
+
+// --- Hot Tub / Spa (west deck near spiral staircase) ---
+const spaR = 3;
+const spaGeo = new THREE.CylinderGeometry(spaR, spaR, 2.5, 16);
+const spaExterior = new THREE.Mesh(spaGeo, makeMat(0x5a4a3a, { roughness: 0.6 }));
+spaExterior.position.set(-28, L2 + 1.5, 0);
+level2.add(spaExterior);
+// Spa water
+const spaWaterGeo = new THREE.CylinderGeometry(spaR - 0.2, spaR - 0.2, 0.3, 16);
+const spaWater = new THREE.Mesh(spaWaterGeo, makeMat(0x4ac0e8, { roughness: 0.05, transparent: true, opacity: 0.6 }));
+spaWater.position.set(-28, L2 + 2.6, 0);
+level2.add(spaWater);
+// Spa rim
+const spaRim = new THREE.Mesh(new THREE.TorusGeometry(spaR, 0.2, 8, 24), makeMat(0x8b7355, { roughness: 0.4 }));
+spaRim.position.set(-28, L2 + 2.75, 0);
+spaRim.rotation.x = Math.PI / 2;
+level2.add(spaRim);
+
+// --- Fire Pit Lounge Area (west deck) ---
+const firePitBase = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 1, 12), makeMat(0x4a4a4a, { roughness: 0.7 }));
+firePitBase.position.set(-28, L2 + 0.75, -8);
+level2.add(firePitBase);
+const firePitInner = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.3, 12), makeMat(0x1a1a1a, { roughness: 0.9 }));
+firePitInner.position.set(-28, L2 + 1.3, -8);
+level2.add(firePitInner);
+// Flames (emissive spheres)
+for (let i = 0; i < 5; i++) {
+  const flame = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2 + Math.random()*0.15, 6, 6),
+    new THREE.MeshStandardMaterial({ color: 0xff6a00, emissive: 0xff4400, emissiveIntensity: 2, roughness: 1 })
+  );
+  flame.position.set(-28 + (Math.random()-0.5)*0.8, L2 + 1.5 + Math.random()*0.5, -8 + (Math.random()-0.5)*0.8);
+  flame.userData.isFlame = true;
+  flame.userData.baseY = flame.position.y;
+  level2.add(flame);
+}
+// Fire pit light
+const fireLight = new THREE.PointLight(0xff6a00, 1.5, 15);
+fireLight.position.set(-28, L2 + 2, -8);
+level2.add(fireLight);
+
+// Curved seating around fire pit
+for (let i = 0; i < 4; i++) {
+  const ang = (i / 4) * Math.PI * 2 + Math.PI / 4;
+  const sx = -28 + Math.cos(ang) * 3.5;
+  const sz = -8 + Math.sin(ang) * 3.5;
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.5, 2), makeMat(0x555566, { roughness: 0.8 }));
+  seat.position.set(sx, L2 + 1, sz);
+  seat.rotation.y = -ang;
+  level2.add(seat);
+  // Cushion
+  const cush = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.3, 1.8), makeMat(0xdddddd, { roughness: 0.9 }));
+  cush.position.set(sx, L2 + 1.9, sz);
+  cush.rotation.y = -ang;
+  level2.add(cush);
+}
+
+// --- Deck LED Strip Lighting (recessed along pool coping) ---
+const ledColor = 0x4adfff;
+const ledStrip1 = new THREE.PointLight(ledColor, 0.3, 8);
+ledStrip1.position.set(poolX - poolW/2, L2 + 0.3, poolZ);
+level2.add(ledStrip1);
+const ledStrip2 = new THREE.PointLight(ledColor, 0.3, 8);
+ledStrip2.position.set(poolX + poolW/2, L2 + 0.3, poolZ);
+level2.add(ledStrip2);
+const ledStrip3 = new THREE.PointLight(ledColor, 0.3, 8);
+ledStrip3.position.set(poolX, L2 + 0.3, poolZ - poolD/2);
+level2.add(ledStrip3);
+const ledStrip4 = new THREE.PointLight(ledColor, 0.3, 8);
+ledStrip4.position.set(poolX, L2 + 0.3, poolZ + poolD/2);
+level2.add(ledStrip4);
+const poolLeds = [ledStrip1, ledStrip2, ledStrip3, ledStrip4];
+
+// ===== EXTERIOR ENVIRONMENT =====
+// Ground plane
+const groundGeo = new THREE.PlaneGeometry(200, 200);
+const ground = new THREE.Mesh(groundGeo, materials.grass);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = 0;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Driveway
+const driveGeo = new THREE.BoxGeometry(20, 0.05, 16);
+const drive = new THREE.Mesh(driveGeo, materials.concrete);
+drive.position.set(-28, 0.05, -18);
+drive.receiveShadow = true;
+scene.add(drive);
+
+// Entry path
+const pathGeo = new THREE.BoxGeometry(4, 0.05, 8);
+const path = new THREE.Mesh(pathGeo, materials.concrete);
+path.position.set(-6, 0.05, -16);
+path.receiveShadow = true;
+scene.add(path);
+
+// Trees
+function addTree(x, z) {
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.3, 0.4, 5, 8),
+    makeMat(0x5a3a1a, { roughness: 0.9 })
+  );
+  trunk.position.set(x, 2.5, z);
+  trunk.castShadow = true;
+  scene.add(trunk);
+
+  const canopy = new THREE.Mesh(
+    new THREE.SphereGeometry(2.5, 12, 10),
+    makeMat(0x2a6a2a + Math.floor(Math.random() * 0x0a1a0a), { roughness: 0.95 })
+  );
+  canopy.position.set(x, 6.5, z);
+  canopy.castShadow = true;
+  scene.add(canopy);
+}
+
+addTree(-42, 18);
+addTree(-40, -18);
+addTree(34, 18);
+addTree(36, -14);
+addTree(-12, 22);
+addTree(12, -22);
+addTree(32, -28);
+addTree(-42, -5);
+addTree(38, 5);
+
+// Hedge row along property
+for (let i = -42; i <= 38; i += 4) {
+  const hedge = new THREE.Mesh(
+    new THREE.BoxGeometry(3.5, 3, 1.5),
+    makeMat(0x2a5a2a, { roughness: 0.95 })
+  );
+  hedge.position.set(i, 1.5, 22);
+  hedge.castShadow = true;
+  scene.add(hedge);
+}
+
+// Palm trees near pool deck
+function addPalm(x, z) {
+  const trunkH = 14;
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.25, 0.35, trunkH, 8),
+    makeMat(0x8b7355, { roughness: 0.9 })
+  );
+  trunk.position.set(x, trunkH/2, z);
+  trunk.castShadow = true;
+  scene.add(trunk);
+  // Fronds
+  for (let i = 0; i < 6; i++) {
+    const ang = (i / 6) * Math.PI * 2;
+    const frondGeo = new THREE.BoxGeometry(0.4, 0.1, 4);
+    const frond = new THREE.Mesh(frondGeo, makeMat(0x2a7a2a, { roughness: 0.9 }));
+    frond.position.set(x + Math.cos(ang)*2, trunkH + 0.5, z + Math.sin(ang)*2);
+    frond.rotation.y = -ang;
+    frond.rotation.x = 0.4;
+    scene.add(frond);
+    // Leaf cluster
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(1.2, 6, 6), makeMat(0x1a6a1a, { roughness: 0.95 }));
+    leaf.position.set(x + Math.cos(ang)*2.5, trunkH + 1, z + Math.sin(ang)*2.5);
+    leaf.scale.set(1, 0.4, 1);
+    scene.add(leaf);
+  }
+  // Crown
+  const crown = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), makeMat(0x2a7a2a, { roughness: 0.9 }));
+  crown.position.set(x, trunkH + 1, z);
+  scene.add(crown);
+}
+
+addPalm(-38, -14);
+addPalm(32, -14);
+addPalm(32, 14);
+addPalm(-38, 14);
+
+updateLoading(90);
+
+// ===== LIGHTING =====
+// Ambient
+const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+scene.add(ambient);
+
+// Sun
+const sun = new THREE.DirectionalLight(0xfff5e0, 1.2);
+sun.position.set(30, 40, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 4096;
+sun.shadow.mapSize.height = 4096;
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 150;
+sun.shadow.camera.left = -50;
+sun.shadow.camera.right = 50;
+sun.shadow.camera.top = 50;
+sun.shadow.camera.bottom = -50;
+sun.shadow.bias = -0.0001;
+scene.add(sun);
+
+// Hemisphere
+const hemi = new THREE.HemisphereLight(0x87ceeb, 0x5a8a3c, 0.3);
+scene.add(hemi);
+
+// Interior lights
+function addPointLight(x, y, z, intensity, color) {
+  const light = new THREE.PointLight(color || 0xfff0d0, intensity, 20);
+  light.position.set(x, y, z);
+  light.castShadow = false;
+  building.add(light);
+  return light;
+}
+
+const interiorLights = [];
+interiorLights.push(addPointLight(-28, 9, 0, 0.6));
+interiorLights.push(addPointLight(-15, 9, 0, 0.5));
+interiorLights.push(addPointLight(-6, 9, 0, 0.7));
+interiorLights.push(addPointLight(5, 9, -6, 0.7));
+interiorLights.push(addPointLight(5, 9, 6, 0.6));
+interiorLights.push(addPointLight(18, 9, -6, 0.6));
+interiorLights.push(addPointLight(20, 9, 6, 0.5));
+interiorLights.push(addPointLight(26, 9, -6, 0.5));
+
+// Sky
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 80, 200);
+
+updateLoading(95);
+
+// ===== CAMERA & CONTROLS =====
+// Simple orbit controls implementation
+camera.position.set(-10, 35, 45);
+camera.lookAt(0, 0, 0);
+
+let isMouseDown = false;
+let isRightDown = false;
+let mouseX = 0, mouseY = 0;
+let targetRotX = 0, targetRotY = 0.8;
+let currentRotX = 0, currentRotY = 0.8;
+let targetDist = 55, currentDist = 55;
+let panX = 0, panZ = 0;
+let targetPanX = 0, targetPanZ = 0;
+let cameraTarget = new THREE.Vector3(0, 3, 0);
+
+container.addEventListener('mousedown', (e) => {
+  if (e.button === 0) { isMouseDown = true; mouseX = e.clientX; mouseY = e.clientY; }
+  if (e.button === 2) { isRightDown = true; mouseX = e.clientX; mouseY = e.clientY; }
+});
+
+container.addEventListener('mouseup', (e) => {
+  if (e.button === 0) isMouseDown = false;
+  if (e.button === 2) isRightDown = false;
+});
+
+container.addEventListener('mousemove', (e) => {
+  const dx = e.clientX - mouseX;
+  const dy = e.clientY - mouseY;
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  if (isMouseDown) {
+    targetRotX -= dx * 0.005;
+    targetRotY = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, targetRotY - dy * 0.005));
+  }
+  if (isRightDown) {
+    const s = currentDist * 0.002;
+    targetPanX += (dx * Math.cos(currentRotX) + dy * Math.sin(currentRotX) * Math.cos(currentRotY)) * s;
+    targetPanZ += (-dx * Math.sin(currentRotX) + dy * Math.cos(currentRotX) * Math.cos(currentRotY)) * s;
+  }
+});
+
+container.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  targetDist = Math.max(10, Math.min(120, targetDist + e.deltaY * 0.05));
+}, { passive: false });
+
+container.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Touch support
+let touch1 = null, touch2 = null;
+container.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isMouseDown = true;
+    mouseX = e.touches[0].clientX;
+    mouseY = e.touches[0].clientY;
+  }
+});
+container.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (e.touches.length === 1 && isMouseDown) {
+    const dx = e.touches[0].clientX - mouseX;
+    const dy = e.touches[0].clientY - mouseY;
+    mouseX = e.touches[0].clientX;
+    mouseY = e.touches[0].clientY;
+    targetRotX -= dx * 0.005;
+    targetRotY = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, targetRotY - dy * 0.005));
+  }
+  if (e.touches.length === 2) {
+    const d = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if (touch1 && touch2) {
+      const prevD = Math.hypot(touch1.x - touch2.x, touch1.y - touch2.y);
+      targetDist = Math.max(10, Math.min(120, targetDist + (prevD - d) * 0.1));
+    }
+    touch1 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touch2 = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+  }
+}, { passive: false });
+container.addEventListener('touchend', () => {
+  isMouseDown = false;
+  touch1 = null;
+  touch2 = null;
+});
+
+// ===== VIEW PRESETS =====
+let currentView = 'perspective';
+let walkthroughActive = false;
+let walkthroughTime = 0;
+
+function setView(view) {
+  currentView = view;
+  walkthroughActive = false;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  switch(view) {
+    case 'perspective':
+      targetRotX = -0.3;
+      targetRotY = 0.8;
+      targetDist = 65;
+      targetPanX = 0;
+      targetPanZ = 0;
+      break;
+    case 'top':
+      targetRotX = 0;
+      targetRotY = 0.05;
+      targetDist = 75;
+      targetPanX = 0;
+      targetPanZ = 0;
+      break;
+    case 'pooldeck':
+      targetRotX = -0.5;
+      targetRotY = 0.55;
+      targetDist = 35;
+      targetPanX = 5;
+      targetPanZ = 0;
+      break;
+    case 'walkthrough':
+      walkthroughActive = true;
+      walkthroughTime = 0;
+      targetDist = 12;
+      targetRotY = 0.55;
+      break;
+  }
+}
+
+// ===== DAY/NIGHT TOGGLE =====
+let isNight = false;
+function toggleTime() {
+  isNight = !isNight;
+  document.getElementById('timeToggle').classList.toggle('night', isNight);
+}
+
+// ===== ANIMATION =====
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  const t = clock.getElapsedTime();
+
+  // Smooth camera
+  const lerpF = 0.06;
+  currentRotX += (targetRotX - currentRotX) * lerpF;
+  currentRotY += (targetRotY - currentRotY) * lerpF;
+  currentDist += (targetDist - currentDist) * lerpF;
+  panX += (targetPanX - panX) * lerpF;
+  panZ += (targetPanZ - panZ) * lerpF;
+
+  // Walkthrough
+  if (walkthroughActive) {
+    walkthroughTime += dt * 0.15;
+    const path = [
+      { x: -6, z: -14, y: 3 },   // Entry approach
+      { x: -6, z: 0, y: 3 },     // Entry foyer
+      { x: 5, z: -6, y: 3 },     // Rec room
+      { x: 5, z: 6, y: 3 },      // Wet bar
+      { x: 18, z: -6, y: 3 },    // Office
+      { x: 20, z: 6, y: 3 },     // Bedroom
+      { x: -28, z: 5, y: 14 },   // Up spiral staircase → Spa
+      { x: -28, z: -8, y: 14 },  // Fire pit lounge
+      { x: -5, z: -7, y: 14 },   // Pool south loungers
+      { x: 5, z: 0, y: 14 },     // Pool center
+      { x: 15, z: 7, y: 14 },    // Pool north side
+      { x: 22, z: 0, y: 14 },    // Dining area
+    ];
+    const totalT = walkthroughTime % path.length;
+    const idx = Math.floor(totalT);
+    const frac = totalT - idx;
+    const a = path[idx % path.length];
+    const b = path[(idx + 1) % path.length];
+    const cx = a.x + (b.x - a.x) * frac;
+    const cz = a.z + (b.z - a.z) * frac;
+    const cy = a.y + (b.y - a.y) * frac;
+    targetPanX = cx;
+    targetPanZ = cz;
+    cameraTarget.y = cy;
+    targetRotX = Math.atan2(b.z - a.z, b.x - a.x) + Math.PI;
+  }
+
+  // Day/Night transition
+  const nightT = isNight ? 1 : 0;
+  const bgDay = new THREE.Color(0x87ceeb);
+  const bgNight = new THREE.Color(0x0a1025);
+  scene.background.lerp(isNight ? bgNight : bgDay, 0.03);
+  scene.fog.color.copy(scene.background);
+
+  sun.intensity = THREE.MathUtils.lerp(sun.intensity, isNight ? 0.05 : 1.2, 0.03);
+  ambient.intensity = THREE.MathUtils.lerp(ambient.intensity, isNight ? 0.08 : 0.35, 0.03);
+  hemi.intensity = THREE.MathUtils.lerp(hemi.intensity, isNight ? 0.05 : 0.3, 0.03);
+
+  interiorLights.forEach(l => {
+    l.intensity = THREE.MathUtils.lerp(l.intensity, isNight ? 1.5 : 0.6, 0.03);
+  });
+
+  // Water shimmer (Level 2 pool)
+  if (poolWater) {
+    poolWater.material.opacity = 0.55 + Math.sin(t * 2) * 0.1;
+    poolWater.position.y = L2 - 0.5 + Math.sin(t * 1.5) * 0.03;
+  }
+  if (spaWater) {
+    spaWater.material.opacity = 0.5 + Math.sin(t * 3) * 0.1;
+  }
+  // Flame animation
+  level2.children.forEach(child => {
+    if (child.userData && child.userData.isFlame) {
+      child.position.y = child.userData.baseY + Math.sin(t * 8 + child.id) * 0.15;
+      child.scale.setScalar(0.8 + Math.sin(t * 6 + child.id * 2) * 0.3);
+    }
+  });
+  // Pool LED intensity at night
+  poolLeds.forEach(led => {
+    led.intensity = THREE.MathUtils.lerp(led.intensity, isNight ? 1.2 : 0.3, 0.03);
+  });
+  fireLight.intensity = THREE.MathUtils.lerp(fireLight.intensity, isNight ? 3 : 1.5, 0.03);
+
+  // Camera position
+  const camTargetY = currentView === 'pooldeck' ? 13 : (walkthroughActive ? cameraTarget.y : 3);
+  cameraTarget.set(panX, camTargetY, panZ);
+  camera.position.set(
+    panX + currentDist * Math.sin(currentRotX) * Math.cos(currentRotY),
+    currentDist * Math.sin(currentRotY),
+    panZ + currentDist * Math.cos(currentRotX) * Math.cos(currentRotY)
+  );
+  camera.lookAt(cameraTarget);
+
+  renderer.render(scene, camera);
+}
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+updateLoading(100);
+animate();
+</script>
+</body>
+</html>
