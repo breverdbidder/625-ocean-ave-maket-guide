@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maket.ai Prompt Engineering — 625 Ocean Ave</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
+  
+  :root {
+    --navy: #1E3A5F;
+    --gold: #C4956A;
+    --sand: #F5F0E8;
+    --dark: #2C2418;
+    --cream: #FAF6F0;
+    --green: #2D6A4F;
+    --red: #C0392B;
+    --blue: #2980B9;
+    --orange: #E67E22;
+    --purple: #7B68A8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(170deg, var(--cream) 0%, #EDE7DB 100%);
+    color: var(--dark);
+    line-height: 1.6;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, #2A4F7A 100%);
+    padding: 32px 24px;
+    border-bottom: 4px solid var(--gold);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    color: white;
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+
+  .header .subtitle {
+    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .header .badge {
+    display: inline-block;
+    background: rgba(196,149,106,0.2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  .toc {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(30,58,95,0.1);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .toc h2 {
+    font-family: 'DM Serif Display', serif;
+    color: var(--navy);
+    font-size: 18px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toc a {
+    display: block;
+    color: var(--navy);
+    text-decoration: none;
+    padding: 6px 0 6px 16px;
+    border-left: 2px solid transparent;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .toc a:hover {
+    color: var(--gold);
+    border-left-color: var(--gold);
+    padding-left: 20px;
+  }
+
+  .section {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(30,58,95,0.08);
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .section h2 {
+    font-family: 'DM Serif Display', serif;
+    color: var(--navy);
+    font-size: 22px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--gold);
+  }
+
+  .section h3 {
+    color: var(--navy);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+  }
+
+  .section p {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #444;
+  }
+
+  .prompt-box {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0 16px;
+    position: relative;
+    border-left: 3px solid var(--gold);
+  }
+
+  .prompt-box pre {
+    color: #E8E4DA;
+    font-family: 'DM Sans', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .prompt-box .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(196,149,106,0.3);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .prompt-box .copy-btn:hover {
+    background: var(--gold);
+    color: white;
+  }
+
+  .prompt-box .copy-btn.copied {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  .label {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .label.render { background: #E3F2FD; color: var(--blue); }
+  .label.visualizer { background: #F3E5F5; color: var(--purple); }
+  .label.restyle { background: #E8F5E9; color: var(--green); }
+  .label.plan { background: #FFF3E0; color: var(--orange); }
+  .label.critical { background: #FFEBEE; color: var(--red); }
+  .label.tip { background: #FFF8E1; color: #F57F17; }
+
+  .rule-card {
+    background: var(--sand);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    border-left: 3px solid var(--navy);
+  }
+
+  .rule-card.warning {
+    background: #FFF3E0;
+    border-left-color: var(--orange);
+  }
+
+  .rule-card.danger {
+    background: #FFEBEE;
+    border-left-color: var(--red);
+  }
+
+  .rule-card.success {
+    background: #E8F5E9;
+    border-left-color: var(--green);
+  }
+
+  .rule-card strong {
+    color: var(--navy);
+    font-size: 13px;
+  }
+
+  .rule-card p {
+    font-size: 13px;
+    margin-top: 4px;
+    color: #555;
+  }
+
+  .specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+
+  .specs-table th {
+    background: var(--navy);
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .specs-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .specs-table tr:nth-child(even) td {
+    background: #F8F6F2;
+  }
+
+  .specs-table tr:hover td {
+    background: #EDE7DB;
+  }
+
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+
+  .checklist li {
+    padding: 8px 0 8px 28px;
+    position: relative;
+    font-size: 14px;
+    border-bottom: 1px solid #f0ece4;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .checklist li:hover {
+    background: #FAF6F0;
+  }
+
+  .checklist li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #aaa;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+
+  .checklist li.checked::before {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .checklist li.checked::after {
+    content: '✓';
+    position: absolute;
+    left: 3px;
+    top: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .checklist li.checked {
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .step-row {
+    display: flex;
+    align-items: flex-start;
+    margin: 14px 0;
+  }
+
+  .tab-container {
+    margin: 16px 0;
+  }
+
+  .tab-buttons {
+    display: flex;
+    gap: 4px;
+    background: #F0ECE4;
+    padding: 4px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--navy);
+    color: white;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .anti-hallucination {
+    background: linear-gradient(135deg, #FFEBEE 0%, #FFF3E0 100%);
+    border: 2px solid var(--red);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+
+  .anti-hallucination h3 {
+    color: var(--red);
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .header h1 { font-size: 22px; }
+    .section { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>Maket.ai Prompt Engineering Guide</h1>
+    <div class="subtitle">625 Ocean Avenue • Satellite Beach, FL • Miami Beach Style</div>
+    <span class="badge">Zero Hallucination Protocol</span>
+  </div>
+</div>
+
+<main>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2>📋 Navigation</h2>
+  <a href="#section-0">0. Anti-Hallucination Rules</a>
+  <a href="#section-1">1. Project Data Sheet (Ground Truth)</a>
+  <a href="#section-2">2. Maket.ai Feature Map & Workflow</a>
+  <a href="#section-3">3. Floor Plan Prompts (Plan Recognizer)</a>
+  <a href="#section-4">4. Interior Rendering Prompts (Render Tool)</a>
+  <a href="#section-5">5. Exterior & Elevation Prompts</a>
+  <a href="#section-6">6. Furniture & Material Prompts</a>
+  <a href="#section-7">7. Room-by-Room Prompt Library</a>
+  <a href="#section-8">8. Quality Checklist</a>
+  <a href="#section-9">9. Prompt Structure Formula</a>
+  <a href="#section-10">10. Common Mistakes & Fixes</a>
+</div>
+
+<!-- SECTION 0: ANTI-HALLUCINATION -->
+<div class="section" id="section-0">
+  <h2>0. Anti-Hallucination Protocol</h2>
+  
+  <div class="anti-hallucination">
+    <h3>⛔ CRITICAL: These Rules Prevent AI Fabrication</h3>
+    <p style="font-size:13px;color:#333;">AI rendering tools (Maket, Midjourney, DALL-E) will invent rooms, add windows, change proportions, and fabricate measurements unless you constrain them with EXACT data. Follow these rules:</p>
+  </div>
+
+  <div class="rule-card danger">
+    <strong>RULE 1: Never Use Vague Language</strong>
+    <p>❌ "large living room" → ✅ "30 ft × 22 ft rec room, 1,966 SF total first floor"</p>
+    <p>❌ "beach house style" → ✅ "3-story coastal modern, CMU block, stucco exterior, flat roof with parapet"</p>
+  </div>
+
+  <div class="rule-card danger">
+    <strong>RULE 2: Always Anchor to Engineering Drawings</strong>
+    <p>Every prompt must reference the actual sheet number (A1-A5) and room from the EDC plans. Upload the PDF page as reference image BEFORE writing the text prompt.</p>
+  </div>
+
+  <div class="rule-card danger">
+    <strong>RULE 3: Specify What Does NOT Exist</strong>
+    <p>Tell the AI what to exclude: "NO pool on ground level, NO pitched roof, NO bay windows, NO second-floor balcony on east elevation." AI adds features by default — you must block them.</p>
+  </div>
+
+  <div class="rule-card danger">
+    <strong>RULE 4: Lock Room Count & Dimensions</strong>
+    <p>State exact count: "EXACTLY 3 bedrooms, EXACTLY 4 bathrooms, EXACTLY 2 wet bars." AI will add or remove rooms if you don't lock them.</p>
+  </div>
+
+  <div class="rule-card danger">
+    <strong>RULE 5: One Room Per Prompt for Interiors</strong>
+    <p>Never ask for "render the whole floor." Always: one room, one angle, one prompt. This prevents the AI from merging or inventing spaces.</p>
+  </div>
+
+  <div class="rule-card danger">
+    <strong>RULE 6: Validate Every Output Against Plans</strong>
+    <p>After EVERY generation, cross-check: window count, door placement, room proportions, ceiling height. If anything deviates from the EDC plans, regenerate with corrections — NEVER accept hallucinated details.</p>
+  </div>
+</div>
+
+<!-- SECTION 1: PROJECT DATA -->
+<div class="section" id="section-1">
+  <h2>1. Project Data Sheet (Ground Truth)</h2>
+  <p>These are the ONLY numbers you feed to Maket.ai. Every prompt must source from this table. If a measurement isn't here, get it from the EDC plans — NEVER guess.</p>
+
+  <h3>Building Envelope</h3>
+  <table class="specs-table">
+    <tr><th>Parameter</th><th>Value</th><th>Source</th></tr>
+    <tr><td>Address</td><td>625 Ocean Street, Satellite Beach, FL 32937</td><td>Sheet A1</td></tr>
+    <tr><td>Structure Type</td><td>Single Family Residence (SFR)</td><td>Sheet A1</td></tr>
+    <tr><td>Stories</td><td>3</td><td>Sheets A3-A5</td></tr>
+    <tr><td>Wind Speed</td><td>160 MPH</td><td>Sheet A1 Design Criteria</td></tr>
+    <tr><td>Exposure Category</td><td>D (oceanfront)</td><td>Sheet A1</td></tr>
+    <tr><td>Building Category</td><td>Two (2)</td><td>Sheet A1</td></tr>
+    <tr><td>Enclosure</td><td>Fully Enclosed</td><td>Sheet A1</td></tr>
+    <tr><td>Engineer of Record</td><td>Edward F. Shinskie, PE #47515</td><td>Sheet A1</td></tr>
+    <tr><td>Designer</td><td>EDC Engineering & Design Concepts, Inc.</td><td>Sheet A1</td></tr>
+  </table>
+
+  <h3>Floor Areas (from EDC Plans)</h3>
+  <table class="specs-table">
+    <tr><th>Level</th><th>Living Area</th><th>Outdoor Area</th><th>Sheet</th></tr>
+    <tr><td>First Floor (Ground)</td><td>1,966 SF</td><td>180 SF porch</td><td>A3</td></tr>
+    <tr><td>Second Floor (Main)</td><td>2,432 SF</td><td>—</td><td>A4</td></tr>
+    <tr><td>Third Floor (Rooftop)</td><td>364 SF upper foyer</td><td>1,913 SF balcony + 448 SF covered porch</td><td>A5</td></tr>
+    <tr><td><strong>Total Living</strong></td><td><strong>4,762 SF</strong></td><td><strong>2,541 SF outdoor</strong></td><td>—</td></tr>
+  </table>
+
+  <h3>Room Schedule (Verified from Plans)</h3>
+  <table class="specs-table">
+    <tr><th>Room</th><th>Floor</th><th>Key Dimensions/Notes</th></tr>
+    <tr><td>Entry Porch</td><td>1st</td><td>180 SF, tempered glass, (2) 3/0×8/0 ext doors + sidelights</td></tr>
+    <tr><td>Entry Foyer</td><td>1st</td><td>Double height where open to above</td></tr>
+    <tr><td>Rec Room</td><td>1st</td><td>72" linear electric fireplace, glass rail stair system</td></tr>
+    <tr><td>Office</td><td>1st</td><td>36" interior door</td></tr>
+    <tr><td>Bedroom Suite (1st)</td><td>1st</td><td>Built-down soffit perimeter, egress windows</td></tr>
+    <tr><td>Bath (1st)</td><td>1st</td><td>32×72 freestanding tub, walk-in shower</td></tr>
+    <tr><td>Wet Bar</td><td>1st</td><td>Bar counter 36" AFF, 6" kneewall</td></tr>
+    <tr><td>Laundry (1st)</td><td>1st</td><td>Washer/dryer, 4" dryer vent thru wall</td></tr>
+    <tr><td>Gourmet Kitchen</td><td>2nd</td><td>48" ref, 36" range/oven w/ hood, wall ovens, DW, coffee bar, wine tower</td></tr>
+    <tr><td>Great Room</td><td>2nd</td><td>72" linear electric fireplace, (4) 4/0×6/0 fixed windows</td></tr>
+    <tr><td>Primary Suite</td><td>2nd</td><td>Built-down soffit perimeter, casement egress windows</td></tr>
+    <tr><td>Primary Spa Bath</td><td>2nd</td><td>32×72 freestanding tub, walk-in shower, his/her WIC</td></tr>
+    <tr><td>Bedroom 2</td><td>2nd</td><td>Casement egress windows</td></tr>
+    <tr><td>Bedroom 3</td><td>2nd</td><td>Casement egress windows</td></tr>
+    <tr><td>Bath 2 & 3</td><td>2nd</td><td>Shared plumbing wall configuration</td></tr>
+    <tr><td>Open Sky Terrace</td><td>3rd</td><td>1,913 SF, 48" CMU walls</td></tr>
+    <tr><td>Covered Porch</td><td>3rd</td><td>448 SF, 8×8 wood columns, wood headers</td></tr>
+    <tr><td>Summer Kitchen</td><td>3rd</td><td>BBQ grille (gas), UC ref, UC ice maker, DW, sink</td></tr>
+    <tr><td>Future Elevator</td><td>All 3</td><td>Shaft roughed-in, all floors</td></tr>
+    <tr><td>3 AC Zones</td><td>All</td><td>ACU 1, 2, 3 with AHU 1 (1st), AHU 2 (2nd)</td></tr>
+  </table>
+
+  <h3>Window Schedule (from Plans)</h3>
+  <table class="specs-table">
+    <tr><th>Type</th><th>Size</th><th>Location</th></tr>
+    <tr><td>Sliding/Hung (S/H)</td><td>4/0 × 6/0</td><td>1st & 2nd floor bedrooms</td></tr>
+    <tr><td>Casement (Egress)</td><td>4/0 × 6/0</td><td>2nd floor bedrooms</td></tr>
+    <tr><td>Fixed Glass</td><td>4/0 × 6/0</td><td>2nd floor great room (4 units)</td></tr>
+    <tr><td>Fixed Transom</td><td>6/0W × 2/0H</td><td>Above bedroom areas</td></tr>
+    <tr><td>Fixed Tempered Transom</td><td>5/0W × 2/0H</td><td>Above bath areas</td></tr>
+    <tr><td>Fixed Glass</td><td>2/0 × 4/0</td><td>Stairwell, various</td></tr>
+    <tr><td>Fixed Glass</td><td>3/0 × 4/0</td><td>3rd floor porch (4 units)</td></tr>
+  </table>
+</div>
+
+<!-- SECTION 2: MAKET WORKFLOW -->
+<div class="section" id="section-2">
+  <h2>2. Maket.ai Feature Map & Workflow</h2>
+  
+  <p>Maket.ai has 5 core features. Use them in this exact sequence for maximum accuracy and zero hallucination:</p>
+
+  <div class="step-row">
+    <span class="step-number">1</span>
+    <div>
+      <strong>Plan Recognizer</strong> — Upload each floor plan PDF page. Maket converts it to an editable digital plan. This grounds all future renders to REAL geometry.<br>
+      <span class="label plan">INPUT: PDF sheets A3, A4, A5</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <span class="step-number">2</span>
+    <div>
+      <strong>Editor</strong> — Verify and correct the recognized plan. Add windows, doors, furniture from Maket's library. Fix any recognition errors BEFORE rendering.<br>
+      <span class="label plan">VERIFY: Room count, wall placement, openings</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <span class="step-number">3</span>
+    <div>
+      <strong>2D → 3D Toggle</strong> — Switch to 3D view to verify spatial accuracy. Walk through virtually. Check ceiling heights and room proportions.<br>
+      <span class="label tip">TIP: Fix issues in 2D before rendering in 3D</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <span class="step-number">4</span>
+    <div>
+      <strong>Render</strong> — Upload floor plans or elevation sketches → get photorealistic renders. Switch to "Advanced/Prompt" mode for full control.<br>
+      <span class="label render">PRIMARY TOOL FOR INTERIOR + ELEVATION RENDERS</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <span class="step-number">5</span>
+    <div>
+      <strong>Visualizer</strong> — Generate concept imagery from scratch using text prompts. Best for mood/style exploration, NOT for dimensional accuracy.<br>
+      <span class="label visualizer">USE LAST — for style boards only</span>
+    </div>
+  </div>
+
+  <div class="rule-card success">
+    <strong>✅ Golden Rule: Always start with Plan Recognizer → Editor → 3D → Render</strong>
+    <p>This sequence ensures every render is anchored to real geometry. The Visualizer alone WILL hallucinate rooms and dimensions.</p>
+  </div>
+</div>
+
+<!-- SECTION 3: FLOOR PLAN PROMPTS -->
+<div class="section" id="section-3">
+  <h2>3. Floor Plan Prompts (Plan Recognizer)</h2>
+  
+  <p>When uploading to the Plan Recognizer, supplement with these text descriptions to help the AI correctly identify rooms:</p>
+
+  <h3>First Floor — Sheet A3</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Three-story oceanfront SFR, FIRST FLOOR PLAN.
+Total living area: 1,966 square feet plus 180 SF entry porch.
+Rooms from east to west: entry porch with tempered glass and dual 3/0×8/0 exterior doors with fixed sidelight panels each side, entry foyer, rec room with 72-inch linear electric fireplace and glass railing staircase going up 26 risers, office area, bedroom suite with built-down soffit perimeter and walk-in closet, full bathroom with 32×72 freestanding tub and walk-in shower, wet bar with 36-inch height counter, laundry room with washer dryer and 4-inch dryer vent through wall, mechanical room, exterior shower.
+Future elevator shaft present. Three AC condensing units (ACU 1, 2, 3) and one air handler (AHU 1).
+Windows: (2) 4/0×6/0 sliding hung units on bedroom, 6/0W×2/0H fixed glass transom windows above bedroom, 2/0×4/0 fixed glass at stairwell.
+Construction: CMU block walls, Exposure D coastal, 160 MPH wind rating.</pre>
+  </div>
+
+  <h3>Second Floor — Sheet A4</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Three-story oceanfront SFR, SECOND FLOOR PLAN (main living level).
+Total living area: 2,432 square feet.
+Rooms: gourmet kitchen with 48-inch refrigerator, 36-inch range with exhaust hood, wall ovens, dishwasher, wine tower, coffee bar with under-counter refrigerator, 48-inch pantry. Great room with 72-inch linear electric fireplace and (4) 4/0×6/0 fixed window units facing ocean. Primary bedroom suite with built-down soffit perimeter, walk-in closet, and spa bathroom with 32×72 freestanding tub and walk-in shower. Bedroom 2 and Bedroom 3 each with (2) 4/0×6/0 casement egress windows. Bath 2 and Bath 3. Second laundry room. Gas tankless water heater.
+36-inch wide exterior French door. Bar counter at 36 inches above finished floor with 6-inch kneewall under counter.
+Future elevator shaft present. AHU 2 air handler on this level.
+Staircase down 26 risers to first floor, up 20 risers to third floor. Open to below at stairwell area.</pre>
+  </div>
+
+  <h3>Third Floor — Sheet A5</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Three-story oceanfront SFR, THIRD FLOOR PLAN (rooftop terrace level).
+Upper level foyer area: 364 square feet.
+Open balcony/sky terrace: 1,913 square feet with 48-inch height CMU perimeter walls.
+Covered porch: 448 square feet with 8×8 wood columns and wood headers.
+Summer kitchen rough-in area with gas BBQ grille, under-counter refrigerator, under-counter ice maker, dishwasher, utility sink.
+Two wet bar areas (west and east).
+(2) 3/0×8/0 exterior doors with 2/0×8/0 fixed sidelight panels each side to access terrace.
+(4) 3/0×4/0 fixed glass windows on covered porch.
+Storage room. Tankless water heater (gas).
+24-inch wide interior door to storage.
+Outdoor TV equipment area.
+Staircase down 20 risers to second floor. Future elevator shaft.
+ACU units 1, 2, 3 located on this level.</pre>
+  </div>
+</div>
+
+<!-- SECTION 4: INTERIOR RENDERING -->
+<div class="section" id="section-4">
+  <h2>4. Interior Rendering Prompts (Render Tool)</h2>
+  
+  <div class="rule-card warning">
+    <strong>⚠️ WORKFLOW: Upload floor plan page FIRST as reference image, THEN apply text prompt in Advanced mode</strong>
+    <p>This anchors the render to real geometry. Text-only prompts without reference images WILL hallucinate room shapes.</p>
+  </div>
+
+  <h3>Prompt Structure Formula</h3>
+  <div class="rule-card">
+    <strong>Format: {Room Name + Dimensions}, {Style + Materials}, {Furniture Placement}, {Lighting}, {Camera Angle}, {Exclusions}</strong>
+    <p>Order matters — items at the front of the prompt have MORE influence on the output than items further back.</p>
+  </div>
+
+  <h3>Miami Beach Style DNA (Use in ALL interior prompts)</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Miami Beach contemporary coastal luxury interior style:
+- Polished Italian marble floors throughout
+- 10-foot ceilings with recessed LED cove lighting
+- Neutral warm palette: white, cream, sand, champagne gold accents
+- Floor-to-ceiling windows for ocean views
+- Clean modern lines with soft curves on furniture
+- Natural materials: marble, light oak, brushed brass, linen
+- NO rustic elements, NO farmhouse style, NO shiplap, NO wood paneling
+- Photorealistic render, natural daylight, interior design photography, 8K quality</pre>
+  </div>
+</div>
+
+<!-- SECTION 5: EXTERIOR & ELEVATION -->
+<div class="section" id="section-5">
+  <h2>5. Exterior & Elevation Prompts</h2>
+
+  <h3>Ocean-Facing (East) Elevation</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Photorealistic architectural elevation rendering, east-facing oceanfront facade.
+Three-story coastal modern single family residence, 625 Ocean Street Satellite Beach Florida.
+EXACT features: 
+- First floor: CMU block construction, entry porch with tempered glass panels and dual 8-foot exterior doors with fixed sidelights, (2) 4/0×6/0 sliding hung windows
+- Second floor: (4) 4/0×6/0 fixed glass window units centered on facade, 36-inch exterior French door, casement windows flanking
+- Third floor: 1,913 SF open balcony with 48-inch CMU parapet walls, covered porch with 8×8 wood columns and wood beam headers, (4) 3/0×4/0 fixed glass windows
+- Flat roof with parapet, NOT pitched, NOT hip, NOT gable
+- Horizontal stucco bands between floors
+- Exterior color: white stucco with sand/champagne accent bands
+- Miami Beach Art Deco influenced modern coastal design
+- Palm trees flanking, ocean visible in background
+- Golden hour lighting, architectural photography, magazine quality
+EXCLUDE: No pool, no garage door, no pitched roof, no bay windows, no dormers, no shutters
+Camera: straight-on elevation view, symmetrical composition</pre>
+  </div>
+
+  <h3>Street-Facing (West) Elevation</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Photorealistic architectural elevation rendering, west-facing street side facade.
+Three-story coastal modern SFR, Satellite Beach Florida.
+EXACT features:
+- Ground level: entry approach, mechanical room vents, 2/0×4/0 fixed glass stairwell windows
+- Second floor: kitchen-side windows, bedroom casement windows (2) 4/0×6/0
+- Third floor: service area, AC equipment screened behind parapet
+- Flat roof with parapet walls, clean modern profile
+- White stucco exterior with horizontal accent bands
+- Driveway approach with tropical landscaping
+- Street view perspective, architectural rendering, golden hour
+- Two palm trees, low tropical hedge, paver driveway
+EXCLUDE: No ocean view from this side, no pool, no balcony furniture visible, no pitched roof</pre>
+  </div>
+
+  <h3>Side Elevation (North or South)</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>Photorealistic side elevation rendering, three-story coastal modern residence.
+EXACT features: 
+- Three distinct floor plates visible in profile
+- 2/0×4/0 fixed glass windows at stairwell positions on each level
+- 6/0W×2/0H fixed glass transom windows at bedroom level
+- Flat roof with parapet, CMU block construction
+- White smooth stucco with horizontal reveals between floors
+- Floor-to-floor height approximately 12 feet
+- Total building height approximately 36 feet to parapet
+- Narrow lot side setback, tropical side yard planting
+- Clean geometric massing, Miami Beach modern influence
+EXCLUDE: No windows beyond what is specified, no decorative shutters, no balconies on side elevations</pre>
+  </div>
+</div>
+
+<!-- SECTION 6: FURNITURE & MATERIALS -->
+<div class="section" id="section-6">
+  <h2>6. Furniture & Material Specifications</h2>
+  
+  <p>These material and furniture specs prevent AI from inventing random styles. Copy the relevant block into EVERY room prompt.</p>
+
+  <h3>Marble Floor Specifications</h3>
+  <table class="specs-table">
+    <tr><th>Room Type</th><th>Marble</th><th>Color Description for AI</th></tr>
+    <tr><td>Living / Rec / Great Room</td><td>Calacatta Gold</td><td>White base with warm gold and honey veining, polished finish, large format 24×48 tiles</td></tr>
+    <tr><td>Kitchen</td><td>Statuario</td><td>Bright white base with dramatic grey veining, polished, 24×24 tiles</td></tr>
+    <tr><td>Bedrooms</td><td>Crema Marfil</td><td>Warm cream/beige with subtle tan veining, honed matte finish, 24×24 tiles</td></tr>
+    <tr><td>Bathrooms</td><td>Verde Guatemala</td><td>Deep emerald green with white veining, polished, 12×24 tiles with white Thassos border</td></tr>
+    <tr><td>Foyer</td><td>Calacatta Viola</td><td>White with purple-grey dramatic veining, polished, medallion pattern center</td></tr>
+    <tr><td>Wet Bars</td><td>Nero Marquina</td><td>Black with white veining, polished, 12×12 tiles</td></tr>
+    <tr><td>Office</td><td>Emperador Dark</td><td>Rich chocolate brown with lighter veining, polished, 18×18 tiles</td></tr>
+    <tr><td>Porches</td><td>Travertine</td><td>Warm ivory tumbled travertine, French pattern layout</td></tr>
+    <tr><td>Rooftop Terrace</td><td>Porcelain Stone</td><td>Grey limestone-look porcelain, 24×24, matte non-slip finish</td></tr>
+  </table>
+
+  <h3>Furniture Style Guide (Miami Beach)</h3>
+  <div class="prompt-box">
+    <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+    <pre>FURNITURE STYLE KEYWORDS (append to room prompts):
+- Sofas: low-profile modern sectional, cream/white boucle upholstery, brushed brass legs
+- Dining: oval white marble table, cream leather upholstered chairs, brass base
+- Beds: upholstered platform bed, cream linen headboard, no footboard
+- Nightstands: white marble top, brushed brass frame, open shelf
+- Coffee tables: round white marble top, brass hairpin legs
+- Bar stools: cream leather seat, brushed brass waterfall legs, no back
+- Lighting: sculptural brass pendant lights, white linen drum shades, LED cove lighting
+- Rugs: cream and sand abstract pattern, low pile, under seating areas only
+- Art: large-scale abstract art in blue/gold/cream tones, thin brass frames
+- Accessories: white ceramic vases, coffee table books, single orchid arrangement
+- Curtains: floor-length sheer white linen panels, ceiling-mounted brass rod
+DO NOT include: dark leather, rustic wood, industrial metal, heavy drapes, patterned wallpaper</pre>
+  </div>
+</div>
+
+<!-- SECTION 7: ROOM-BY-ROOM PROMPTS -->
+<div class="section" id="section-7">
+  <h2>7. Room-by-Room Prompt Library</h2>
+
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab(event, 'tab-1f')">1st Floor</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-2f')">2nd Floor</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-3f')">3rd Floor</button>
+    </div>
+
+    <div id="tab-1f" class="tab-content active">
+      
+      <h3>Rec Room (1st Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of ground floor rec room, Miami Beach luxury coastal home.
+Room features from engineering plans: 72-inch linear electric fireplace on feature wall, glass railing staircase system with 26 risers going to second floor, open-to-above double height stairwell area.
+Floor: Calacatta Gold polished marble, large format 24×48 tiles with warm gold veining on white base.
+Walls: smooth white plaster, 10-foot ceiling with recessed LED cove lighting along perimeter.
+Furniture: cream boucle L-shaped sectional sofa facing fireplace, round white marble coffee table with brass legs, two cream linen accent chairs, large abstract blue and gold painting above fireplace, floor-length sheer white linen curtains.
+Lighting: natural daylight from entry and windows, warm 3000K recessed ceiling lights, fireplace glow.
+Camera: wide angle interior shot from entry foyer looking toward fireplace wall.
+Style: photorealistic interior design photography, Architectural Digest quality, 8K.
+EXCLUDE: No carpet, no wood floor, no ceiling fan, no TV above fireplace, no dark furniture.</pre>
+      </div>
+
+      <h3>Entry Foyer (1st Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of entry foyer, Miami Beach luxury oceanfront home.
+Features from plans: double-height space open to second floor above, tempered glass entry door with fixed sidelight panels, 36-inch wide interior doorways.
+Floor: Calacatta Viola polished marble with purple-grey dramatic veining on white base, medallion inlay pattern at center of foyer.
+Walls: smooth white plaster with subtle niches for accent lighting.
+Furniture: round marble-top console table with brass base against wall, tall white ceramic floor vase with dried pampas grass, oversized round brass-framed mirror.
+Lighting: statement brass pendant chandelier hanging from double height ceiling, recessed LED downlights.
+Camera: looking from front door inward toward staircase and rec room.
+EXCLUDE: No coat closet visible, no shoes, no clutter, no rug covering marble medallion.</pre>
+      </div>
+
+      <h3>First Floor Bedroom Suite</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of ground floor bedroom suite, Miami Beach coastal luxury.
+Features from plans: built-down soffit perimeter around ceiling edge, (2) 4/0×6/0 sliding hung windows with egress, 6/0W×2/0H fixed glass transom window above, 36-inch interior doors, walk-in closet adjacent, built-in niche shelf.
+Floor: Crema Marfil honed marble, warm cream/beige with subtle tan veining, 24×24 tiles.
+Walls: white plaster, soffit detail painted to match ceiling.
+Furniture: king-size upholstered platform bed with cream linen headboard centered on main wall, white marble nightstands with brass frames both sides, cream linen bench at foot of bed, built-in niche shelf with accent objects.
+Bedding: white hotel-quality linens, cream and sand throw pillows, light sand-colored throw blanket.
+Lighting: natural light from windows, brass wall sconces flanking bed, recessed ceiling lights.
+Camera: from doorway looking toward bed and windows.
+EXCLUDE: No TV, no dark colors, no heavy drapes, no ceiling fan, no carpet.</pre>
+      </div>
+
+      <h3>First Floor Bathroom</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of first floor full bathroom, Miami Beach spa-inspired luxury.
+Features from plans: 32×72 inch freestanding bathtub, walk-in shower area with glass enclosure, linen shelving, dual-door walk-in closet access, 5/0W×2/0H fixed tempered glass transom window.
+Floor: Verde Guatemala polished marble, deep emerald green with white veining, 12×24 tiles with white Thassos marble border trim.
+Walls: floor-to-ceiling Verde Guatemala marble on wet walls, white plaster on dry walls.
+Fixtures: matte white freestanding oval soaking tub centered, brushed brass floor-mounted tub filler, frameless glass walk-in shower with rainfall showerhead in brushed brass, floating white marble double vanity with undermount basins, brushed brass wall-mount faucets.
+Accessories: white fluffy towels on brass towel rack, single white orchid on vanity, frameless backlit vanity mirror.
+Lighting: natural light from transom window, LED backlit mirror, recessed ceiling with warm 3000K.
+Camera: wide shot from entrance showing tub and shower.
+EXCLUDE: No shower curtain, no tub surround, no dark tile, no wallpaper, no pedestal sink.</pre>
+      </div>
+    </div>
+
+    <div id="tab-2f" class="tab-content">
+      
+      <h3>Gourmet Kitchen (2nd Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of second floor gourmet kitchen, Miami Beach luxury oceanfront home.
+Features from plans: 48-inch wide refrigerator, 36-inch range/oven with exhaust hood above, separate wall ovens, dishwasher, wine tower, coffee bar with under-counter refrigerator and microwave, 48-inch pantry, bar counter at 36 inches AFF with 6-inch kneewall under counter, open shelving.
+Floor: Statuario polished marble, bright white base with dramatic grey veining, 24×24 tiles.
+Cabinetry: flat-panel white lacquer cabinets, no visible hardware (push-to-open), brushed brass edge pulls on drawers only.
+Countertops: book-matched Statuario marble waterfall island, white quartz perimeter counters.
+Appliances: integrated panel-ready refrigerator, professional stainless range with brass knobs, built-in espresso machine at coffee bar, wine column with glass door.
+Island: large center island with waterfall marble ends, 4 cream leather bar stools with brass legs on counter side.
+Lighting: 3 sculptural brass pendant lights over island, under-cabinet LED strips, recessed ceiling lights.
+Camera: looking from great room toward kitchen island and appliance wall.
+EXCLUDE: No upper cabinets on island wall, no pendant lights beyond 3, no dark cabinets, no tile backsplash.</pre>
+      </div>
+
+      <h3>Great Room (2nd Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of second floor great room, Miami Beach luxury oceanfront home.
+Features from plans: 72-inch linear electric fireplace on interior wall, (4) 4/0×6/0 fixed glass window units facing ocean east, 36-inch exterior French door to balcony access, open plan connected to kitchen.
+Floor: Calacatta Gold polished marble, white base with warm gold veining, large format 24×48 tiles.
+Walls: smooth white plaster, feature wall behind fireplace in light warm grey textured plaster.
+Ocean view: Atlantic Ocean visible through four large fixed windows, blue water and sky.
+Furniture: 10-foot cream boucle sectional facing ocean windows, round white marble coffee table, two sand-colored linen accent chairs, brass and marble side tables, large abstract ocean-toned art flanking fireplace.
+Rug: 10×14 cream and sand abstract low-pile rug under seating area.
+Lighting: ocean daylight flooding through windows, fireplace amber glow, brass arc floor lamp beside sectional, recessed ceiling lights.
+Camera: from kitchen looking east toward ocean windows and fireplace wall.
+EXCLUDE: No TV, no ceiling fan, no dark furniture, no heavy curtains blocking ocean view, no wood floor.</pre>
+      </div>
+
+      <h3>Primary Suite (2nd Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Interior rendering of second floor primary bedroom suite, Miami Beach luxury oceanfront.
+Features from plans: built-down soffit perimeter, (2) 4/0×6/0 casement egress windows, 6/0W×2/0H fixed glass transom window above, 72-inch linear electric fireplace, 36-inch interior door to spa bath, walk-in closet with (2) 30-inch interior doors.
+Floor: Crema Marfil honed marble, warm cream with subtle tan veining, 24×24 matte tiles.
+Walls: white plaster, light grey textured plaster accent wall behind bed.
+Furniture: California king upholstered platform bed with oversized cream linen channel-tufted headboard, matching marble-top nightstands with brass frames, cream upholstered bench at foot, reading nook with cream linen chaise by window.
+Bedding: pure white Egyptian cotton duvet, cream and champagne silk accent pillows, cashmere throw.
+Fireplace: 72-inch linear electric unit on wall opposite bed, flush-mounted, no mantel.
+Lighting: ocean light from casement windows, brass swing-arm wall sconces, LED cove lighting in soffit.
+Camera: from doorway looking toward bed, windows, and ocean light.
+EXCLUDE: No TV, no dark wood, no heavy drapes, no patterned wallpaper, no carpet, no ceiling fan.</pre>
+      </div>
+    </div>
+
+    <div id="tab-3f" class="tab-content">
+      
+      <h3>Rooftop Sky Terrace (3rd Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Exterior rendering of third floor open sky terrace, Miami Beach luxury oceanfront home.
+Features from plans: 1,913 square feet open balcony area, 48-inch height CMU perimeter walls, adjacent to 448 SF covered porch with 8×8 wood columns and wood beam headers.
+Floor: grey limestone-look porcelain tiles, 24×24, matte non-slip finish.
+Perimeter walls: 48-inch CMU walls with smooth white stucco finish, optional glass railing above for ocean views.
+Furniture layout - lounge zone: two cream outdoor sectionals facing ocean, round teak coffee table, cream outdoor accent chairs. Dining zone: 10-seat teak dining table with cream cushioned chairs under covered porch area. Wet bar zone: built-in Nero Marquina marble bar top, 4 outdoor bar stools.
+Accessories: large tropical potted plants (bird of paradise, palms) in white planters at corners, outdoor string lighting overhead, cream outdoor throw pillows.
+Summer kitchen: stainless steel BBQ grille, under-counter refrigerator, ice maker, countertop bar area.
+View: panoramic Atlantic Ocean view to east, Satellite Beach skyline visible.
+Lighting: golden hour sunset, warm ambient string lights, LED step lighting on perimeter walls.
+Camera: wide establishing shot from covered porch looking across terrace toward ocean.
+EXCLUDE: No pool, no hot tub, no fire pit (unless specified), no cheap plastic furniture, no artificial grass.</pre>
+      </div>
+
+      <h3>Covered Porch (3rd Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Exterior rendering of third floor covered porch, Miami Beach coastal luxury.
+Features from plans: 448 square feet, 8×8 wood columns supporting wood beam headers, (4) 3/0×4/0 fixed glass windows, (2) 3/0×8/0 exterior doors with 2/0×8/0 fixed sidelight panels, opens to upper foyer.
+Floor: warm ivory tumbled travertine, French pattern layout.
+Ceiling: exposed wood beam structure with painted white tongue-and-groove between beams, brass ceiling fans.
+Furniture: outdoor teak dining table seating 8 with cream sunbrella cushioned chairs, hanging brass lantern pendant above table, cream outdoor daybed/lounge in corner.
+Columns: 8×8 wood posts, painted white, clean modern profile.
+View: ocean visible through column openings, tropical plants framing view.
+Lighting: golden hour, warm pendant lantern, recessed LED in ceiling.
+Camera: interior of porch looking outward toward ocean through columns.
+EXCLUDE: No screens, no curtains on columns, no dark stain on wood, no wicker furniture.</pre>
+      </div>
+
+      <h3>Summer Kitchen (3rd Floor)</h3>
+      <span class="label render">Render Tool — Advanced Mode</span>
+      <div class="prompt-box">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        <pre>Exterior rendering of rooftop summer kitchen, Miami Beach luxury oceanfront home.
+Features from plans: gas BBQ grille, under-counter refrigerator, under-counter ice maker, dishwasher, utility sink, bar counter at 36 inches AFF with 6-inch kneewall, outdoor TV equipment area.
+Countertop: Nero Marquina polished black marble with white veining, waterfall edge on bar side.
+Cabinetry: marine-grade white lacquer outdoor cabinets, stainless steel hardware.
+Appliances: built-in stainless steel BBQ grille, stainless UC refrigerator, ice maker.
+Bar seating: 4 cream sunbrella-upholstered outdoor bar stools with teak frames.
+Backdrop: 48-inch CMU wall with smooth white stucco, outdoor TV mounted above equipment niche.
+Floor: grey porcelain stone tiles matching terrace, 24×24 matte.
+Lighting: pendant lights over bar, under-counter LED task lighting, evening ambiance.
+Camera: straight-on showing full counter run with bar stools, ocean visible to one side.
+EXCLUDE: No pizza oven, no smoker, no dark stone, no rustic elements.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 8: CHECKLIST -->
+<div class="section" id="section-8">
+  <h2>8. Quality Validation Checklist</h2>
+  <p>Click each item to mark it verified. Run this checklist AFTER every Maket.ai render generation.</p>
+
+  <h3>Structural Accuracy</h3>
+  <ul class="checklist" id="checklist-1">
+    <li onclick="toggleCheck(this)">Building shows exactly 3 stories (no more, no less)</li>
+    <li onclick="toggleCheck(this)">Roof is FLAT with parapet (not pitched, hip, or gable)</li>
+    <li onclick="toggleCheck(this)">Windows match count and sizes from Section 1 data sheet</li>
+    <li onclick="toggleCheck(this)">Entry has dual doors with sidelights (not single door)</li>
+    <li onclick="toggleCheck(this)">Third floor shows 48" CMU walls on terrace perimeter</li>
+    <li onclick="toggleCheck(this)">Covered porch has wood columns, not steel or concrete pillars</li>
+    <li onclick="toggleCheck(this)">No pool, no garage, no features NOT in the EDC plans</li>
+  </ul>
+
+  <h3>Interior Accuracy</h3>
+  <ul class="checklist" id="checklist-2">
+    <li onclick="toggleCheck(this)">Marble type matches room assignment from Section 6</li>
+    <li onclick="toggleCheck(this)">Fireplaces are LINEAR ELECTRIC (not traditional mantel)</li>
+    <li onclick="toggleCheck(this)">Bathtubs are FREESTANDING 32×72 (not built-in or clawfoot)</li>
+    <li onclick="toggleCheck(this)">Kitchen has 48" fridge + separate range + wall ovens (not all-in-one)</li>
+    <li onclick="toggleCheck(this)">Staircase has GLASS RAILING (not wood or iron)</li>
+    <li onclick="toggleCheck(this)">Room proportions look correct relative to SF callouts</li>
+    <li onclick="toggleCheck(this)">No rooms appear that don't exist in the plans</li>
+  </ul>
+
+  <h3>Style Consistency</h3>
+  <ul class="checklist" id="checklist-3">
+    <li onclick="toggleCheck(this)">Miami Beach aesthetic: clean, white, brass, marble, light</li>
+    <li onclick="toggleCheck(this)">No rustic, farmhouse, industrial, or dark elements crept in</li>
+    <li onclick="toggleCheck(this)">Furniture is modern/contemporary, not traditional or transitional</li>
+    <li onclick="toggleCheck(this)">Color palette stays within white/cream/sand/brass/ocean blue</li>
+    <li onclick="toggleCheck(this)">Renders look like the SAME house across all views</li>
+  </ul>
+</div>
+
+<!-- SECTION 9: FORMULA -->
+<div class="section" id="section-9">
+  <h2>9. Master Prompt Structure Formula</h2>
+  
+  <p>Every prompt you write for Maket.ai should follow this exact 8-part structure. Items listed first carry the most weight.</p>
+
+  <div class="grid-2">
+    <div class="rule-card">
+      <strong>1. SCENE TYPE</strong>
+      <p>"Interior rendering of..." / "Exterior elevation of..." / "Aerial view of..."</p>
+    </div>
+    <div class="rule-card">
+      <strong>2. ROOM + DIMENSIONS</strong>
+      <p>Room name, floor level, square footage, key measurements from plans</p>
+    </div>
+    <div class="rule-card">
+      <strong>3. ARCHITECTURAL FEATURES</strong>
+      <p>Windows (count + size), doors, fireplace, stairs, soffits — from EDC sheets</p>
+    </div>
+    <div class="rule-card">
+      <strong>4. MATERIALS + FINISHES</strong>
+      <p>Specific marble name + color description, wall finish, ceiling treatment</p>
+    </div>
+    <div class="rule-card">
+      <strong>5. FURNITURE + FIXTURES</strong>
+      <p>Specific pieces, colors, materials, placement relative to room features</p>
+    </div>
+    <div class="rule-card">
+      <strong>6. LIGHTING</strong>
+      <p>Natural light source + direction, artificial fixtures, time of day, mood</p>
+    </div>
+    <div class="rule-card">
+      <strong>7. CAMERA + QUALITY</strong>
+      <p>Angle, lens, perspective, "photorealistic, 8K, Architectural Digest quality"</p>
+    </div>
+    <div class="rule-card danger">
+      <strong>8. EXCLUSIONS (CRITICAL)</strong>
+      <p>"EXCLUDE: No [list everything you DON'T want]" — this is your hallucination firewall</p>
+    </div>
+  </div>
+
+  <div class="rule-card success" style="margin-top: 16px;">
+    <strong>✅ Quick Template (Copy & Modify)</strong>
+    <p style="font-family: monospace; font-size: 12px; margin-top: 8px;">
+      [Scene type] of [room name], [floor level], [project name].<br>
+      Features from plans: [list architectural elements with dimensions].<br>
+      Floor: [marble name], [color description], [tile size].<br>
+      Walls: [finish]. Ceiling: [height, treatment].<br>
+      Furniture: [specific pieces with materials and colors].<br>
+      Lighting: [natural + artificial sources, time of day].<br>
+      Camera: [angle and perspective].<br>
+      Style: photorealistic, interior design photography, 8K quality.<br>
+      EXCLUDE: [list everything NOT wanted].
+    </p>
+  </div>
+</div>
+
+<!-- SECTION 10: MISTAKES -->
+<div class="section" id="section-10">
+  <h2>10. Common Mistakes & Fixes</h2>
+
+  <table class="specs-table">
+    <tr><th style="width:35%">Mistake (Causes Hallucination)</th><th style="width:35%">Fix (Grounded Prompt)</th><th>Why It Matters</th></tr>
+    <tr>
+      <td>❌ "beautiful beach house"</td>
+      <td>✅ "3-story coastal modern SFR, flat roof, white stucco, CMU construction, 160 MPH wind rated"</td>
+      <td>Vague = AI invents Cape Cod, Mediterranean, or Caribbean style</td>
+    </tr>
+    <tr>
+      <td>❌ "marble floors"</td>
+      <td>✅ "Calacatta Gold polished marble, white base with warm gold veining, 24×48 large format tiles"</td>
+      <td>Generic "marble" = AI picks random color/pattern</td>
+    </tr>
+    <tr>
+      <td>❌ "nice kitchen"</td>
+      <td>✅ "Gourmet kitchen with 48-inch ref, 36-inch range with hood, wall ovens, wine tower, coffee bar"</td>
+      <td>Without appliance specs, AI adds/removes appliances randomly</td>
+    </tr>
+    <tr>
+      <td>❌ "modern furniture"</td>
+      <td>✅ "cream boucle sectional, white marble coffee table with brass legs, linen accent chairs"</td>
+      <td>"Modern" means different things to different AI models</td>
+    </tr>
+    <tr>
+      <td>❌ No exclusions at end</td>
+      <td>✅ "EXCLUDE: No pool, no pitched roof, no shutters, no dark wood, no carpet"</td>
+      <td>Without exclusions, AI adds common beach house clichés</td>
+    </tr>
+    <tr>
+      <td>❌ Rendering all floors at once</td>
+      <td>✅ One room per prompt, upload reference floor plan page</td>
+      <td>Multi-room prompts = merged spaces, wrong proportions</td>
+    </tr>
+    <tr>
+      <td>❌ Using Visualizer for floor plans</td>
+      <td>✅ Use Plan Recognizer → Editor → 3D → Render workflow</td>
+      <td>Visualizer has no geometry anchor = pure hallucination</td>
+    </tr>
+    <tr>
+      <td>❌ "Make it look like [reference photo]"</td>
+      <td>✅ Describe every element from the reference in words + upload plan as base</td>
+      <td>AI blends reference + imagination = Frankenstein output</td>
+    </tr>
+    <tr>
+      <td>❌ Not specifying window count</td>
+      <td>✅ "(4) 4/0×6/0 fixed glass windows facing east"</td>
+      <td>AI loves adding/removing windows — lock the count</td>
+    </tr>
+    <tr>
+      <td>❌ "Natural lighting"</td>
+      <td>✅ "East-facing ocean daylight through 4 fixed windows, golden hour, warm 3000K recessed ceiling"</td>
+      <td>Direction + source + color temp prevents random lighting</td>
+    </tr>
+  </table>
+
+  <div class="anti-hallucination" style="margin-top: 20px;">
+    <h3>🎯 The #1 Anti-Hallucination Rule</h3>
+    <p style="font-size: 14px; color: #333; font-weight: 500;">
+      If it's not in the EDC engineering drawings (Sheets A1-A5), it does NOT exist in the house. 
+      Period. Every number, every window, every door, every room must trace back to a specific sheet and callout. 
+      If the AI generates something you can't find in the plans, it hallucinated it — regenerate with a correction.
+    </p>
+  </div>
+</div>
+
+</main>
+
+<script>
+function copyPrompt(btn) {
+  const pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function toggleCheck(li) {
+  li.classList.toggle('checked');
+}
+
+function switchTab(event, tabId) {
+  const container = event.target.closest('.tab-container');
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Smooth scroll for TOC links
+document.querySelectorAll('.toc a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
