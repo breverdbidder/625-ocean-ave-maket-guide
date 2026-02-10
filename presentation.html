@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>625 Ocean Ave — Rendering Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+
+  :root {
+    --navy: #1E3A5F;
+    --gold: #C4956A;
+    --sand: #F5F0E8;
+    --dark: #0a0a0a;
+    --cream: #FAF6F0;
+    --banana: #F5C842;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    overflow-y: scroll;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--dark);
+    color: white;
+  }
+
+  /* SLIDE */
+  .slide {
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* TITLE SLIDE */
+  .slide.title-slide {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 50%, #1E3A5F 100%);
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .title-slide h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 64px);
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: white;
+    line-height: 1.2;
+  }
+
+  .title-slide .address {
+    font-size: clamp(14px, 2vw, 22px);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 300;
+  }
+
+  .title-slide .divider {
+    width: 80px;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .title-slide .subtitle {
+    font-size: clamp(12px, 1.5vw, 16px);
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .title-slide .badge {
+    display: inline-block;
+    border: 1px solid var(--banana);
+    color: var(--banana);
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  .title-slide .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: bounce 2s infinite;
+  }
+
+  .scroll-hint span {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .scroll-hint .arrow {
+    width: 24px;
+    height: 24px;
+    border-right: 2px solid rgba(255,255,255,0.4);
+    border-bottom: 2px solid rgba(255,255,255,0.4);
+    transform: rotate(45deg);
+  }
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+    40% { transform: translateX(-50%) translateY(-10px); }
+    60% { transform: translateX(-50%) translateY(-5px); }
+  }
+
+  /* RENDERING SLIDE */
+  .slide.render-slide {
+    background: var(--dark);
+  }
+
+  .render-slide .bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.15;
+    filter: blur(30px) saturate(1.2);
+    transform: scale(1.1);
+  }
+
+  .render-slide .content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    gap: 40px;
+  }
+
+  .render-slide .image-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .render-slide .image-container img {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  .render-slide .info-panel {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .info-panel .slide-number {
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .info-panel .floor-tag {
+    display: inline-block;
+    background: rgba(196,149,106,0.15);
+    border: 1px solid rgba(196,149,106,0.3);
+    color: var(--gold);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+
+  .info-panel h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: white;
+  }
+
+  .info-panel .description {
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+  }
+
+  .info-panel .specs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .info-panel .spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .spec-row .spec-label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .spec-row .spec-value {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--banana));
+    z-index: 1000;
+    transition: width 0.3s ease;
+  }
+
+  /* SLIDE COUNTER */
+  .slide-counter {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 300;
+  }
+
+  .slide-counter .current {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  /* NAV DOTS */
+  .nav-dots {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot.active {
+    background: var(--gold);
+    transform: scale(1.4);
+  }
+
+  .nav-dot:hover {
+    background: rgba(255,255,255,0.5);
+  }
+
+  /* KEYBOARD HINT */
+  .keyboard-hint {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .key-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 5px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .keyboard-hint span {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+  }
+
+  /* ENDING SLIDE */
+  .slide.end-slide {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1E3A5F 100%);
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .end-slide h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 400;
+    color: white;
+  }
+
+  .end-slide .tagline {
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .end-slide .details {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    line-height: 2;
+    margin-top: 20px;
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    .render-slide .content {
+      flex-direction: column;
+      padding: 20px;
+      gap: 20px;
+    }
+    .render-slide .info-panel {
+      width: 100%;
+      gap: 10px;
+    }
+    .render-slide .image-container img {
+      max-height: 50vh;
+    }
+    .nav-dots { display: none; }
+    .keyboard-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<div class="nav-dots" id="navDots"></div>
+
+<div class="slide-counter" id="slideCounter">
+  <span class="current">1</span> / 15
+</div>
+
+<div class="keyboard-hint">
+  <div class="key-icon">&darr;</div>
+  <div class="key-icon">&uarr;</div>
+  <span>or scroll to navigate</span>
+</div>
+
+<!-- SLIDE 0: TITLE -->
+<div class="slide title-slide" data-index="0">
+  <div class="subtitle">Nano Banana Pro Renderings</div>
+  <h1>625 Ocean Avenue</h1>
+  <div class="divider"></div>
+  <div class="address">Satellite Beach, Florida</div>
+  <div class="badge">13 Architectural Renderings</div>
+  <div class="scroll-hint">
+    <span>Scroll to begin</span>
+    <div class="arrow"></div>
+  </div>
+</div>
+
+<!-- SLIDE 1: EAST ELEVATION -->
+<div class="slide render-slide" data-index="1">
+  <img class="bg-image" src="images/01_east_elevation.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/01_east_elevation.png" alt="East Elevation">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 01 of 13</div>
+      <div class="floor-tag">Exterior</div>
+      <h2>East Elevation</h2>
+      <div class="description">Ocean-facing facade showcasing the three-story coastal modern design with flat roof parapet, white stucco exterior, and Miami Beach Art Deco influences.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">View</span><span class="spec-value">Ocean-Facing (East)</span></div>
+        <div class="spec-row"><span class="spec-label">Stories</span><span class="spec-value">3</span></div>
+        <div class="spec-row"><span class="spec-label">Construction</span><span class="spec-value">CMU Block / Stucco</span></div>
+        <div class="spec-row"><span class="spec-label">Wind Rating</span><span class="spec-value">160 MPH</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheets A3-A5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: WEST ELEVATION -->
+<div class="slide render-slide" data-index="2">
+  <img class="bg-image" src="images/02_west_elevation.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/02_west_elevation.png" alt="West Elevation">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 02 of 13</div>
+      <div class="floor-tag">Exterior</div>
+      <h2>West Elevation</h2>
+      <div class="description">Street-facing facade with driveway approach, tropical landscaping, horizontal accent bands, and clean modern profile with parapet walls.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">View</span><span class="spec-value">Street-Facing (West)</span></div>
+        <div class="spec-row"><span class="spec-label">Features</span><span class="spec-value">Paver Driveway</span></div>
+        <div class="spec-row"><span class="spec-label">Exterior</span><span class="spec-value">White Stucco</span></div>
+        <div class="spec-row"><span class="spec-label">Landscaping</span><span class="spec-value">Palm Trees / Tropical</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheets A3-A5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: SIDE ELEVATION -->
+<div class="slide render-slide" data-index="3">
+  <img class="bg-image" src="images/03_side_elevation.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/03_side_elevation.png" alt="Side Elevation">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 03 of 13</div>
+      <div class="floor-tag">Exterior</div>
+      <h2>Side Elevation</h2>
+      <div class="description">North/South profile showing three distinct floor plates, geometric massing, and horizontal stucco reveals between floors. Total height approximately 36 feet to parapet.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">View</span><span class="spec-value">North/South Side</span></div>
+        <div class="spec-row"><span class="spec-label">Floor Height</span><span class="spec-value">~12 ft each</span></div>
+        <div class="spec-row"><span class="spec-label">Total Height</span><span class="spec-value">~36 ft to parapet</span></div>
+        <div class="spec-row"><span class="spec-label">Windows</span><span class="spec-value">Fixed glass at stairwell</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheets A3-A5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: REC ROOM -->
+<div class="slide render-slide" data-index="4">
+  <img class="bg-image" src="images/04_rec_room.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/04_rec_room.png" alt="Rec Room">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 04 of 13</div>
+      <div class="floor-tag">1st Floor</div>
+      <h2>Rec Room</h2>
+      <div class="description">Ground floor entertainment space featuring a 72-inch linear electric fireplace, glass railing staircase with 26 risers, and Calacatta Gold marble floors.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Calacatta Gold Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Fireplace</span><span class="spec-value">72" Linear Electric</span></div>
+        <div class="spec-row"><span class="spec-label">Staircase</span><span class="spec-value">Glass Rail / 26 Risers</span></div>
+        <div class="spec-row"><span class="spec-label">Ceiling</span><span class="spec-value">10 ft / LED Cove</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A3</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: ENTRY FOYER -->
+<div class="slide render-slide" data-index="5">
+  <img class="bg-image" src="images/05_entry_foyer.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/05_entry_foyer.png" alt="Entry Foyer">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 05 of 13</div>
+      <div class="floor-tag">1st Floor</div>
+      <h2>Entry Foyer</h2>
+      <div class="description">Double-height entry with Calacatta Viola marble medallion inlay, tempered glass doors with sidelights, and a statement brass pendant chandelier.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Calacatta Viola Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Height</span><span class="spec-value">Double-Height</span></div>
+        <div class="spec-row"><span class="spec-label">Entry</span><span class="spec-value">Dual 3/0x8/0 Doors</span></div>
+        <div class="spec-row"><span class="spec-label">Feature</span><span class="spec-value">Medallion Inlay</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A3</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: BEDROOM 1F -->
+<div class="slide render-slide" data-index="6">
+  <img class="bg-image" src="images/06_bedroom_1f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/06_bedroom_1f.png" alt="First Floor Bedroom">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 06 of 13</div>
+      <div class="floor-tag">1st Floor</div>
+      <h2>Bedroom Suite</h2>
+      <div class="description">Ground floor bedroom with built-down soffit perimeter, Crema Marfil honed marble, king platform bed with cream linen headboard, and transom windows above.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Crema Marfil Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Windows</span><span class="spec-value">(2) 4/0x6/0 S/H + Transom</span></div>
+        <div class="spec-row"><span class="spec-label">Ceiling</span><span class="spec-value">Built-Down Soffit</span></div>
+        <div class="spec-row"><span class="spec-label">Closet</span><span class="spec-value">Walk-In Adjacent</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A3</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: BATHROOM 1F -->
+<div class="slide render-slide" data-index="7">
+  <img class="bg-image" src="images/07_bathroom_1f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/07_bathroom_1f.png" alt="First Floor Bathroom">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 07 of 13</div>
+      <div class="floor-tag">1st Floor</div>
+      <h2>Spa Bathroom</h2>
+      <div class="description">Spa-inspired bathroom with Verde Guatemala emerald marble, 32x72 freestanding soaking tub, frameless glass walk-in shower, and brushed brass fixtures throughout.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Verde Guatemala Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Tub</span><span class="spec-value">32x72 Freestanding</span></div>
+        <div class="spec-row"><span class="spec-label">Shower</span><span class="spec-value">Frameless Glass / Rainfall</span></div>
+        <div class="spec-row"><span class="spec-label">Fixtures</span><span class="spec-value">Brushed Brass</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A3</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: KITCHEN -->
+<div class="slide render-slide" data-index="8">
+  <img class="bg-image" src="images/08_kitchen_2f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/08_kitchen_2f.png" alt="Gourmet Kitchen">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 08 of 13</div>
+      <div class="floor-tag">2nd Floor</div>
+      <h2>Gourmet Kitchen</h2>
+      <div class="description">Professional-grade kitchen with Statuario marble waterfall island, white lacquer push-to-open cabinetry, wine tower, coffee bar, and three sculptural brass pendants.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Statuario Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Island</span><span class="spec-value">Waterfall Marble Ends</span></div>
+        <div class="spec-row"><span class="spec-label">Appliances</span><span class="spec-value">48" Ref / 36" Range</span></div>
+        <div class="spec-row"><span class="spec-label">Features</span><span class="spec-value">Wine Tower / Coffee Bar</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A4</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: GREAT ROOM -->
+<div class="slide render-slide" data-index="9">
+  <img class="bg-image" src="images/09_great_room_2f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/09_great_room_2f.png" alt="Great Room">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 09 of 13</div>
+      <div class="floor-tag">2nd Floor</div>
+      <h2>Great Room</h2>
+      <div class="description">Main living space with panoramic Atlantic Ocean views through four 4/0x6/0 fixed glass windows, 72-inch linear electric fireplace, and cream boucle sectional.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Calacatta Gold Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Windows</span><span class="spec-value">(4) 4/0x6/0 Fixed Glass</span></div>
+        <div class="spec-row"><span class="spec-label">Fireplace</span><span class="spec-value">72" Linear Electric</span></div>
+        <div class="spec-row"><span class="spec-label">View</span><span class="spec-value">Atlantic Ocean (East)</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A4</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: PRIMARY SUITE -->
+<div class="slide render-slide" data-index="10">
+  <img class="bg-image" src="images/10_primary_suite_2f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/10_primary_suite_2f.png" alt="Primary Suite">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 10 of 13</div>
+      <div class="floor-tag">2nd Floor</div>
+      <h2>Primary Suite</h2>
+      <div class="description">Master bedroom with California king platform bed, oversized cream linen channel-tufted headboard, LED cove lighting in built-down soffit, and ocean light from casement windows.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Crema Marfil Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Bed</span><span class="spec-value">Cal King / Channel-Tufted</span></div>
+        <div class="spec-row"><span class="spec-label">Fireplace</span><span class="spec-value">72" Linear Electric</span></div>
+        <div class="spec-row"><span class="spec-label">Windows</span><span class="spec-value">(2) 4/0x6/0 Casement</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A4</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11: SKY TERRACE -->
+<div class="slide render-slide" data-index="11">
+  <img class="bg-image" src="images/11_sky_terrace_3f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/11_sky_terrace_3f.png" alt="Sky Terrace">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 11 of 13</div>
+      <div class="floor-tag">3rd Floor</div>
+      <h2>Open Sky Terrace</h2>
+      <div class="description">1,913 square foot rooftop terrace with panoramic Atlantic Ocean views, 48-inch CMU perimeter walls, outdoor sectionals, string lighting, and tropical planters.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Area</span><span class="spec-value">1,913 SF Open</span></div>
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Grey Porcelain Stone</span></div>
+        <div class="spec-row"><span class="spec-label">Walls</span><span class="spec-value">48" CMU / White Stucco</span></div>
+        <div class="spec-row"><span class="spec-label">View</span><span class="spec-value">Panoramic Ocean</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12: COVERED PORCH -->
+<div class="slide render-slide" data-index="12">
+  <img class="bg-image" src="images/12_covered_porch_3f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/12_covered_porch_3f.png" alt="Covered Porch">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 12 of 13</div>
+      <div class="floor-tag">3rd Floor</div>
+      <h2>Covered Porch</h2>
+      <div class="description">448 square foot covered outdoor dining with 8x8 painted white wood columns, exposed beam ceiling, teak dining table for 8, and tumbled travertine floors.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Area</span><span class="spec-value">448 SF Covered</span></div>
+        <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Tumbled Travertine</span></div>
+        <div class="spec-row"><span class="spec-label">Columns</span><span class="spec-value">8x8 Wood / White</span></div>
+        <div class="spec-row"><span class="spec-label">Ceiling</span><span class="spec-value">Exposed Beam / T&G</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: SUMMER KITCHEN -->
+<div class="slide render-slide" data-index="13">
+  <img class="bg-image" src="images/13_summer_kitchen_3f.png" alt="">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/13_summer_kitchen_3f.png" alt="Summer Kitchen">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Rendering 13 of 13</div>
+      <div class="floor-tag">3rd Floor</div>
+      <h2>Summer Kitchen</h2>
+      <div class="description">Rooftop outdoor kitchen with Nero Marquina black marble waterfall bar, stainless steel BBQ grille, under-counter refrigerator, ice maker, and ocean-side bar seating.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Counter</span><span class="spec-value">Nero Marquina Marble</span></div>
+        <div class="spec-row"><span class="spec-label">Grill</span><span class="spec-value">Gas BBQ / Stainless</span></div>
+        <div class="spec-row"><span class="spec-label">Appliances</span><span class="spec-value">UC Ref / Ice Maker / DW</span></div>
+        <div class="spec-row"><span class="spec-label">Seating</span><span class="spec-value">4 Bar Stools</span></div>
+        <div class="spec-row"><span class="spec-label">Source</span><span class="spec-value">Sheet A5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14: END -->
+<div class="slide end-slide" data-index="14">
+  <div class="tagline">Nano Banana Pro Renderings</div>
+  <h2>625 Ocean Avenue</h2>
+  <div class="divider" style="width:80px;height:2px;background:var(--gold);"></div>
+  <div class="details">
+    Satellite Beach, Florida 32937<br>
+    4,762 SF Living &bull; 2,541 SF Outdoor<br>
+    3 Stories &bull; 4 Bedrooms &bull; 4 Bathrooms<br>
+    Rooftop Sky Terrace &bull; Summer Kitchen<br><br>
+    EDC Engineering &amp; Design Concepts, Inc.<br>
+    Edward F. Shinskie, PE #47515
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+const progress = document.getElementById('progress');
+const counter = document.getElementById('slideCounter');
+const navDotsContainer = document.getElementById('navDots');
+
+// Create nav dots
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => slides[i].scrollIntoView({ behavior: 'smooth' });
+  navDotsContainer.appendChild(dot);
+});
+
+const dots = document.querySelectorAll('.nav-dot');
+
+// Intersection Observer for tracking current slide
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const index = parseInt(entry.target.dataset.index);
+      // Update progress bar
+      progress.style.width = ((index / (totalSlides - 1)) * 100) + '%';
+      // Update counter
+      counter.querySelector('.current').textContent = index + 1;
+      // Update dots
+      dots.forEach((d, i) => d.classList.toggle('active', i === index));
+    }
+  });
+}, { threshold: 0.5 });
+
+slides.forEach(slide => observer.observe(slide));
+</script>
+
+</body>
+</html>
