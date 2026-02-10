@@ -14,6 +14,7 @@
     --dark: #0a0a0a;
     --cream: #FAF6F0;
     --banana: #F5C842;
+    --blueprint: #1a3a5c;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,7 +31,6 @@
     color: white;
   }
 
-  /* SLIDE */
   .slide {
     width: 100vw;
     height: 100vh;
@@ -133,10 +133,7 @@
 
   .render-slide .bg-image {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     object-fit: cover;
     opacity: 0.15;
     filter: blur(30px) saturate(1.2);
@@ -199,6 +196,12 @@
     width: fit-content;
   }
 
+  .info-panel .floor-tag.blueprint {
+    background: rgba(41,128,185,0.15);
+    border-color: rgba(41,128,185,0.4);
+    color: #5dade2;
+  }
+
   .info-panel h2 {
     font-family: 'DM Serif Display', serif;
     font-size: clamp(24px, 3vw, 36px);
@@ -243,11 +246,90 @@
     text-align: right;
   }
 
+  /* FLOOR PLAN SLIDE */
+  .slide.floorplan-slide {
+    background: linear-gradient(135deg, #0a1628 0%, var(--blueprint) 100%);
+  }
+
+  .floorplan-slide .content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    gap: 40px;
+  }
+
+  .floorplan-slide .image-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 16px;
+  }
+
+  .floorplan-slide .image-container img {
+    max-width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 8px;
+    filter: brightness(1.1) contrast(1.05);
+  }
+
+  .floorplan-slide .info-panel {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  /* SECTION DIVIDER SLIDE */
+  .slide.divider-slide {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1E3A5F 100%);
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .divider-slide .floor-label {
+    font-size: 14px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 300;
+  }
+
+  .divider-slide h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 400;
+    color: white;
+  }
+
+  .divider-slide .divider-line {
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .divider-slide .room-list {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    line-height: 2;
+    font-weight: 300;
+  }
+
   /* PROGRESS BAR */
   .progress-bar {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     height: 3px;
     background: linear-gradient(90deg, var(--gold), var(--banana));
     z-index: 1000;
@@ -281,7 +363,7 @@
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .nav-dot {
@@ -298,6 +380,14 @@
   .nav-dot.active {
     background: var(--gold);
     transform: scale(1.4);
+  }
+
+  .nav-dot.floorplan {
+    background: rgba(93,173,226,0.4);
+  }
+
+  .nav-dot.floorplan.active {
+    background: #5dade2;
   }
 
   .nav-dot:hover {
@@ -333,7 +423,7 @@
     letter-spacing: 1px;
   }
 
-  /* ENDING SLIDE */
+  /* END SLIDE */
   .slide.end-slide {
     background: linear-gradient(135deg, #0d1b2a 0%, #1E3A5F 100%);
     flex-direction: column;
@@ -363,20 +453,20 @@
     margin-top: 20px;
   }
 
-  /* MOBILE */
   @media (max-width: 900px) {
-    .render-slide .content {
+    .render-slide .content,
+    .floorplan-slide .content {
       flex-direction: column;
       padding: 20px;
       gap: 20px;
     }
-    .render-slide .info-panel {
+    .render-slide .info-panel,
+    .floorplan-slide .info-panel {
       width: 100%;
       gap: 10px;
     }
-    .render-slide .image-container img {
-      max-height: 50vh;
-    }
+    .render-slide .image-container img { max-height: 50vh; }
+    .floorplan-slide .image-container img { max-height: 45vh; }
     .nav-dots { display: none; }
     .keyboard-hint { display: none; }
   }
@@ -385,39 +475,81 @@
 <body>
 
 <div class="progress-bar" id="progress"></div>
-
 <div class="nav-dots" id="navDots"></div>
-
-<div class="slide-counter" id="slideCounter">
-  <span class="current">1</span> / 15
-</div>
-
+<div class="slide-counter" id="slideCounter"><span class="current">1</span> / <span id="totalCount">23</span></div>
 <div class="keyboard-hint">
   <div class="key-icon">&darr;</div>
   <div class="key-icon">&uarr;</div>
   <span>or scroll to navigate</span>
 </div>
 
-<!-- SLIDE 0: TITLE -->
+<!-- ==================== SLIDE 0: TITLE ==================== -->
 <div class="slide title-slide" data-index="0">
   <div class="subtitle">Nano Banana Pro Renderings</div>
   <h1>625 Ocean Avenue</h1>
   <div class="divider"></div>
   <div class="address">Satellite Beach, Florida</div>
-  <div class="badge">13 Architectural Renderings</div>
+  <div class="badge">5 Floor Plans &bull; 13 Renderings</div>
   <div class="scroll-hint">
     <span>Scroll to begin</span>
     <div class="arrow"></div>
   </div>
 </div>
 
-<!-- SLIDE 1: EAST ELEVATION -->
-<div class="slide render-slide" data-index="1">
-  <img class="bg-image" src="images/01_east_elevation.png" alt="">
+<!-- ==================== FLOOR PLANS: COVER & SITE ==================== -->
+<div class="slide floorplan-slide" data-index="1" data-type="floorplan">
   <div class="content">
     <div class="image-container">
-      <img src="images/01_east_elevation.png" alt="East Elevation">
+      <img src="images/floorplan_A1.png" alt="Sheet A1 - Cover Sheet">
     </div>
+    <div class="info-panel">
+      <div class="slide-number">Floor Plan 1 of 5</div>
+      <div class="floor-tag blueprint">EDC Engineering Drawing</div>
+      <h2>Sheet A1 &mdash; Cover</h2>
+      <div class="description">Cover sheet with project information, design criteria, general notes, and engineer of record certification.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Project</span><span class="spec-value">625 Ocean Street</span></div>
+        <div class="spec-row"><span class="spec-label">Engineer</span><span class="spec-value">Edward F. Shinskie, PE</span></div>
+        <div class="spec-row"><span class="spec-label">Wind Speed</span><span class="spec-value">160 MPH</span></div>
+        <div class="spec-row"><span class="spec-label">Exposure</span><span class="spec-value">D (Oceanfront)</span></div>
+        <div class="spec-row"><span class="spec-label">Enclosure</span><span class="spec-value">Fully Enclosed</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide floorplan-slide" data-index="2" data-type="floorplan">
+  <div class="content">
+    <div class="image-container">
+      <img src="images/floorplan_A2.png" alt="Sheet A2 - Site Plan">
+    </div>
+    <div class="info-panel">
+      <div class="slide-number">Floor Plan 2 of 5</div>
+      <div class="floor-tag blueprint">EDC Engineering Drawing</div>
+      <h2>Sheet A2 &mdash; Site Plan</h2>
+      <div class="description">Site plan showing lot boundaries, building footprint, setbacks, and site orientation relative to the Atlantic Ocean.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Location</span><span class="spec-value">Satellite Beach, FL</span></div>
+        <div class="spec-row"><span class="spec-label">Orientation</span><span class="spec-value">East = Ocean</span></div>
+        <div class="spec-row"><span class="spec-label">Type</span><span class="spec-value">Single Family Residence</span></div>
+        <div class="spec-row"><span class="spec-label">Stories</span><span class="spec-value">3</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== EXTERIORS ==================== -->
+<div class="slide divider-slide" data-index="3">
+  <div class="floor-label">Exterior Views</div>
+  <h2>Elevation Renderings</h2>
+  <div class="divider-line"></div>
+  <div class="room-list">East (Ocean) &bull; West (Street) &bull; Side (North/South)</div>
+</div>
+
+<div class="slide render-slide" data-index="4">
+  <img class="bg-image" src="images/01_east_elevation.png" alt="">
+  <div class="content">
+    <div class="image-container"><img src="images/01_east_elevation.png" alt="East Elevation"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 01 of 13</div>
       <div class="floor-tag">Exterior</div>
@@ -434,13 +566,10 @@
   </div>
 </div>
 
-<!-- SLIDE 2: WEST ELEVATION -->
-<div class="slide render-slide" data-index="2">
+<div class="slide render-slide" data-index="5">
   <img class="bg-image" src="images/02_west_elevation.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/02_west_elevation.png" alt="West Elevation">
-    </div>
+    <div class="image-container"><img src="images/02_west_elevation.png" alt="West Elevation"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 02 of 13</div>
       <div class="floor-tag">Exterior</div>
@@ -457,18 +586,15 @@
   </div>
 </div>
 
-<!-- SLIDE 3: SIDE ELEVATION -->
-<div class="slide render-slide" data-index="3">
+<div class="slide render-slide" data-index="6">
   <img class="bg-image" src="images/03_side_elevation.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/03_side_elevation.png" alt="Side Elevation">
-    </div>
+    <div class="image-container"><img src="images/03_side_elevation.png" alt="Side Elevation"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 03 of 13</div>
       <div class="floor-tag">Exterior</div>
       <h2>Side Elevation</h2>
-      <div class="description">North/South profile showing three distinct floor plates, geometric massing, and horizontal stucco reveals between floors. Total height approximately 36 feet to parapet.</div>
+      <div class="description">North/South profile showing three distinct floor plates, geometric massing, and horizontal stucco reveals. Total height ~36 feet to parapet.</div>
       <div class="specs">
         <div class="spec-row"><span class="spec-label">View</span><span class="spec-value">North/South Side</span></div>
         <div class="spec-row"><span class="spec-label">Floor Height</span><span class="spec-value">~12 ft each</span></div>
@@ -480,13 +606,39 @@
   </div>
 </div>
 
-<!-- SLIDE 4: REC ROOM -->
-<div class="slide render-slide" data-index="4">
-  <img class="bg-image" src="images/04_rec_room.png" alt="">
+<!-- ==================== 1ST FLOOR ==================== -->
+<div class="slide divider-slide" data-index="7">
+  <div class="floor-label">First Floor</div>
+  <h2>Ground Level</h2>
+  <div class="divider-line"></div>
+  <div class="room-list">1,966 SF Living &bull; 180 SF Porch<br>Rec Room &bull; Entry Foyer &bull; Bedroom Suite &bull; Spa Bathroom</div>
+</div>
+
+<div class="slide floorplan-slide" data-index="8" data-type="floorplan">
   <div class="content">
     <div class="image-container">
-      <img src="images/04_rec_room.png" alt="Rec Room">
+      <img src="images/floorplan_A3.png" alt="Sheet A3 - First Floor Plan">
     </div>
+    <div class="info-panel">
+      <div class="slide-number">Floor Plan 3 of 5</div>
+      <div class="floor-tag blueprint">EDC Engineering Drawing</div>
+      <h2>Sheet A3 &mdash; First Floor</h2>
+      <div class="description">First level floor plan at 1/4" = 1'-0" scale showing all rooms, dimensions, window schedules, and structural elements.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Living Area</span><span class="spec-value">1,966 SF</span></div>
+        <div class="spec-row"><span class="spec-label">Porch</span><span class="spec-value">180 SF</span></div>
+        <div class="spec-row"><span class="spec-label">Fireplace</span><span class="spec-value">72" Linear Electric</span></div>
+        <div class="spec-row"><span class="spec-label">Staircase</span><span class="spec-value">26 Risers to 2nd</span></div>
+        <div class="spec-row"><span class="spec-label">Scale</span><span class="spec-value">1/4" = 1'-0"</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide render-slide" data-index="9">
+  <img class="bg-image" src="images/04_rec_room.png" alt="">
+  <div class="content">
+    <div class="image-container"><img src="images/04_rec_room.png" alt="Rec Room"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 04 of 13</div>
       <div class="floor-tag">1st Floor</div>
@@ -503,13 +655,10 @@
   </div>
 </div>
 
-<!-- SLIDE 5: ENTRY FOYER -->
-<div class="slide render-slide" data-index="5">
+<div class="slide render-slide" data-index="10">
   <img class="bg-image" src="images/05_entry_foyer.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/05_entry_foyer.png" alt="Entry Foyer">
-    </div>
+    <div class="image-container"><img src="images/05_entry_foyer.png" alt="Entry Foyer"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 05 of 13</div>
       <div class="floor-tag">1st Floor</div>
@@ -526,13 +675,10 @@
   </div>
 </div>
 
-<!-- SLIDE 6: BEDROOM 1F -->
-<div class="slide render-slide" data-index="6">
+<div class="slide render-slide" data-index="11">
   <img class="bg-image" src="images/06_bedroom_1f.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/06_bedroom_1f.png" alt="First Floor Bedroom">
-    </div>
+    <div class="image-container"><img src="images/06_bedroom_1f.png" alt="First Floor Bedroom"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 06 of 13</div>
       <div class="floor-tag">1st Floor</div>
@@ -549,18 +695,15 @@
   </div>
 </div>
 
-<!-- SLIDE 7: BATHROOM 1F -->
-<div class="slide render-slide" data-index="7">
+<div class="slide render-slide" data-index="12">
   <img class="bg-image" src="images/07_bathroom_1f.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/07_bathroom_1f.png" alt="First Floor Bathroom">
-    </div>
+    <div class="image-container"><img src="images/07_bathroom_1f.png" alt="First Floor Bathroom"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 07 of 13</div>
       <div class="floor-tag">1st Floor</div>
       <h2>Spa Bathroom</h2>
-      <div class="description">Spa-inspired bathroom with Verde Guatemala emerald marble, 32x72 freestanding soaking tub, frameless glass walk-in shower, and brushed brass fixtures throughout.</div>
+      <div class="description">Spa-inspired bathroom with Verde Guatemala emerald marble, 32x72 freestanding soaking tub, frameless glass walk-in shower, and brushed brass fixtures.</div>
       <div class="specs">
         <div class="spec-row"><span class="spec-label">Floor</span><span class="spec-value">Verde Guatemala Marble</span></div>
         <div class="spec-row"><span class="spec-label">Tub</span><span class="spec-value">32x72 Freestanding</span></div>
@@ -572,13 +715,39 @@
   </div>
 </div>
 
-<!-- SLIDE 8: KITCHEN -->
-<div class="slide render-slide" data-index="8">
-  <img class="bg-image" src="images/08_kitchen_2f.png" alt="">
+<!-- ==================== 2ND FLOOR ==================== -->
+<div class="slide divider-slide" data-index="13">
+  <div class="floor-label">Second Floor</div>
+  <h2>Main Living Level</h2>
+  <div class="divider-line"></div>
+  <div class="room-list">2,432 SF Living<br>Gourmet Kitchen &bull; Great Room &bull; Primary Suite</div>
+</div>
+
+<div class="slide floorplan-slide" data-index="14" data-type="floorplan">
   <div class="content">
     <div class="image-container">
-      <img src="images/08_kitchen_2f.png" alt="Gourmet Kitchen">
+      <img src="images/floorplan_A4.png" alt="Sheet A4 - Second Floor Plan">
     </div>
+    <div class="info-panel">
+      <div class="slide-number">Floor Plan 4 of 5</div>
+      <div class="floor-tag blueprint">EDC Engineering Drawing</div>
+      <h2>Sheet A4 &mdash; Second Floor</h2>
+      <div class="description">Main living level floor plan showing gourmet kitchen, great room, primary suite, bedrooms 2 &amp; 3, and all window/door schedules.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Living Area</span><span class="spec-value">2,432 SF</span></div>
+        <div class="spec-row"><span class="spec-label">Great Room</span><span class="spec-value">(4) 4/0x6/0 Fixed Glass</span></div>
+        <div class="spec-row"><span class="spec-label">Fireplace</span><span class="spec-value">72" Linear Electric</span></div>
+        <div class="spec-row"><span class="spec-label">Staircase</span><span class="spec-value">20 Risers to 3rd</span></div>
+        <div class="spec-row"><span class="spec-label">Scale</span><span class="spec-value">1/4" = 1'-0"</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide render-slide" data-index="15">
+  <img class="bg-image" src="images/08_kitchen_2f.png" alt="">
+  <div class="content">
+    <div class="image-container"><img src="images/08_kitchen_2f.png" alt="Gourmet Kitchen"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 08 of 13</div>
       <div class="floor-tag">2nd Floor</div>
@@ -595,13 +764,10 @@
   </div>
 </div>
 
-<!-- SLIDE 9: GREAT ROOM -->
-<div class="slide render-slide" data-index="9">
+<div class="slide render-slide" data-index="16">
   <img class="bg-image" src="images/09_great_room_2f.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/09_great_room_2f.png" alt="Great Room">
-    </div>
+    <div class="image-container"><img src="images/09_great_room_2f.png" alt="Great Room"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 09 of 13</div>
       <div class="floor-tag">2nd Floor</div>
@@ -618,13 +784,10 @@
   </div>
 </div>
 
-<!-- SLIDE 10: PRIMARY SUITE -->
-<div class="slide render-slide" data-index="10">
+<div class="slide render-slide" data-index="17">
   <img class="bg-image" src="images/10_primary_suite_2f.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/10_primary_suite_2f.png" alt="Primary Suite">
-    </div>
+    <div class="image-container"><img src="images/10_primary_suite_2f.png" alt="Primary Suite"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 10 of 13</div>
       <div class="floor-tag">2nd Floor</div>
@@ -641,13 +804,39 @@
   </div>
 </div>
 
-<!-- SLIDE 11: SKY TERRACE -->
-<div class="slide render-slide" data-index="11">
-  <img class="bg-image" src="images/11_sky_terrace_3f.png" alt="">
+<!-- ==================== 3RD FLOOR ==================== -->
+<div class="slide divider-slide" data-index="18">
+  <div class="floor-label">Third Floor</div>
+  <h2>Rooftop Terrace Level</h2>
+  <div class="divider-line"></div>
+  <div class="room-list">364 SF Foyer &bull; 1,913 SF Sky Terrace &bull; 448 SF Covered Porch<br>Sky Terrace &bull; Covered Porch &bull; Summer Kitchen</div>
+</div>
+
+<div class="slide floorplan-slide" data-index="19" data-type="floorplan">
   <div class="content">
     <div class="image-container">
-      <img src="images/11_sky_terrace_3f.png" alt="Sky Terrace">
+      <img src="images/floorplan_A5.png" alt="Sheet A5 - Third Floor Plan">
     </div>
+    <div class="info-panel">
+      <div class="slide-number">Floor Plan 5 of 5</div>
+      <div class="floor-tag blueprint">EDC Engineering Drawing</div>
+      <h2>Sheet A5 &mdash; Third Floor</h2>
+      <div class="description">Rooftop terrace level plan showing open sky terrace, covered porch with wood columns, summer kitchen, wet bars, and AC equipment locations.</div>
+      <div class="specs">
+        <div class="spec-row"><span class="spec-label">Foyer</span><span class="spec-value">364 SF</span></div>
+        <div class="spec-row"><span class="spec-label">Sky Terrace</span><span class="spec-value">1,913 SF Open</span></div>
+        <div class="spec-row"><span class="spec-label">Covered Porch</span><span class="spec-value">448 SF</span></div>
+        <div class="spec-row"><span class="spec-label">Columns</span><span class="spec-value">8x8 Wood</span></div>
+        <div class="spec-row"><span class="spec-label">Scale</span><span class="spec-value">1/4" = 1'-0"</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide render-slide" data-index="20">
+  <img class="bg-image" src="images/11_sky_terrace_3f.png" alt="">
+  <div class="content">
+    <div class="image-container"><img src="images/11_sky_terrace_3f.png" alt="Sky Terrace"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 11 of 13</div>
       <div class="floor-tag">3rd Floor</div>
@@ -664,13 +853,10 @@
   </div>
 </div>
 
-<!-- SLIDE 12: COVERED PORCH -->
-<div class="slide render-slide" data-index="12">
+<div class="slide render-slide" data-index="21">
   <img class="bg-image" src="images/12_covered_porch_3f.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/12_covered_porch_3f.png" alt="Covered Porch">
-    </div>
+    <div class="image-container"><img src="images/12_covered_porch_3f.png" alt="Covered Porch"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 12 of 13</div>
       <div class="floor-tag">3rd Floor</div>
@@ -687,13 +873,10 @@
   </div>
 </div>
 
-<!-- SLIDE 13: SUMMER KITCHEN -->
-<div class="slide render-slide" data-index="13">
+<div class="slide render-slide" data-index="22">
   <img class="bg-image" src="images/13_summer_kitchen_3f.png" alt="">
   <div class="content">
-    <div class="image-container">
-      <img src="images/13_summer_kitchen_3f.png" alt="Summer Kitchen">
-    </div>
+    <div class="image-container"><img src="images/13_summer_kitchen_3f.png" alt="Summer Kitchen"></div>
     <div class="info-panel">
       <div class="slide-number">Rendering 13 of 13</div>
       <div class="floor-tag">3rd Floor</div>
@@ -710,11 +893,11 @@
   </div>
 </div>
 
-<!-- SLIDE 14: END -->
-<div class="slide end-slide" data-index="14">
+<!-- ==================== END SLIDE ==================== -->
+<div class="slide end-slide" data-index="23">
   <div class="tagline">Nano Banana Pro Renderings</div>
   <h2>625 Ocean Avenue</h2>
-  <div class="divider" style="width:80px;height:2px;background:var(--gold);"></div>
+  <div style="width:80px;height:2px;background:var(--gold);"></div>
   <div class="details">
     Satellite Beach, Florida 32937<br>
     4,762 SF Living &bull; 2,541 SF Outdoor<br>
@@ -731,27 +914,25 @@ const totalSlides = slides.length;
 const progress = document.getElementById('progress');
 const counter = document.getElementById('slideCounter');
 const navDotsContainer = document.getElementById('navDots');
+document.getElementById('totalCount').textContent = totalSlides;
 
-// Create nav dots
-slides.forEach((_, i) => {
+slides.forEach((slide, i) => {
   const dot = document.createElement('button');
-  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  const isFloorplan = slide.dataset.type === 'floorplan';
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '') + (isFloorplan ? ' floorplan' : '');
+  dot.title = slide.querySelector('h2')?.textContent || slide.querySelector('h1')?.textContent || '';
   dot.onclick = () => slides[i].scrollIntoView({ behavior: 'smooth' });
   navDotsContainer.appendChild(dot);
 });
 
 const dots = document.querySelectorAll('.nav-dot');
 
-// Intersection Observer for tracking current slide
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const index = parseInt(entry.target.dataset.index);
-      // Update progress bar
       progress.style.width = ((index / (totalSlides - 1)) * 100) + '%';
-      // Update counter
       counter.querySelector('.current').textContent = index + 1;
-      // Update dots
       dots.forEach((d, i) => d.classList.toggle('active', i === index));
     }
   });
