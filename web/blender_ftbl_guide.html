@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>625 Ocean St — Blender + FTBL Execution Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#080d17; --sf:#0e1626; --bd:#1a2a40; --tx:#e0e8f0; --mt:#5a7090; --ac:#4ecdc4; --ac2:#5ba4f5; --wrn:#f0c040; --org:#E87D0D; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:linear-gradient(160deg,var(--bg),var(--sf),var(--bg));color:var(--tx);min-height:100vh;padding:20px 14px;line-height:1.6}
+.ctr{max-width:840px;margin:0 auto}
+h1{font-family:'Outfit';font-weight:900;font-size:clamp(22px,4vw,32px);background:linear-gradient(135deg,var(--org) 0%,#f0a050 50%,var(--ac) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px}
+.sub{text-align:center;color:var(--mt);font-size:13px;margin-bottom:20px}
+
+.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.badge{font-family:'JetBrains Mono';font-size:10px;font-weight:600;padding:4px 12px;border-radius:6px;letter-spacing:0.5px}
+
+.progress-bar{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.progress-track{flex:1;height:8px;background:var(--bd);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--ac),var(--org));border-radius:4px;transition:width 0.5s;width:0%}
+.progress-text{font-family:'JetBrains Mono';font-size:12px;color:var(--ac);font-weight:600;white-space:nowrap}
+
+.step{background:var(--sf);border:1px solid var(--bd);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:all 0.25s}
+.step.done{border-color:var(--ac)}
+.step.done .s-num{background:var(--ac);color:var(--bg)}
+.step-hd{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
+.s-num{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,rgba(232,125,13,0.12),rgba(232,125,13,0.25));border:1.5px solid rgba(232,125,13,0.35);display:flex;align-items:center;justify-content:center;font-family:'Outfit';font-weight:800;font-size:14px;color:var(--org);flex-shrink:0}
+.s-info{flex:1}
+.s-title{font-family:'Outfit';font-weight:700;font-size:15px;color:#f0f4f8}
+.s-meta{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap}
+.s-tag{font-family:'JetBrains Mono';font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600;letter-spacing:0.3px}
+.s-chk{width:22px;height:22px;border:2px solid var(--bd);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;font-size:12px;color:transparent}
+.s-chk:hover{border-color:var(--ac)}
+.step.done .s-chk{background:var(--ac);border-color:var(--ac);color:var(--bg)}
+.s-arrow{color:var(--mt);font-size:14px;transition:transform 0.2s}
+.step.open .s-arrow{transform:rotate(180deg)}
+
+.s-body{padding:0 18px 16px;display:none}
+.step.open .s-body{display:block}
+
+.action{background:rgba(78,205,196,0.04);border:1px solid rgba(78,205,196,0.15);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.action-label{font-family:'JetBrains Mono';font-size:10px;color:var(--ac);letter-spacing:1px;font-weight:600;margin-bottom:6px}
+.action p{font-size:13px;color:#b0c4d8;margin-bottom:6px}
+
+.cmd{background:#0a1020;border:1px solid var(--bd);border-radius:8px;padding:10px 14px;margin:8px 0;position:relative;font-family:'JetBrains Mono';font-size:12px;color:#90b8d8;line-height:1.5;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.cmd .copy-btn{position:absolute;top:6px;right:6px;background:var(--bd);border:none;color:var(--mt);padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono';font-size:10px;cursor:pointer;transition:all 0.2s}
+.cmd .copy-btn:hover{background:var(--ac);color:var(--bg)}
+
+.link{color:var(--ac2);text-decoration:none;border-bottom:1px solid rgba(91,164,245,0.3)}
+.link:hover{border-bottom-color:var(--ac2)}
+
+.warn{background:rgba(240,192,64,0.06);border:1px solid rgba(240,192,64,0.2);border-radius:8px;padding:10px 14px;margin:8px 0}
+.warn-label{font-family:'JetBrains Mono';font-size:10px;color:var(--wrn);letter-spacing:1px;font-weight:600;margin-bottom:4px}
+.warn p{font-size:12px;color:#b0a080}
+
+.output{background:rgba(232,125,13,0.05);border-left:3px solid var(--org);border-radius:0 8px 8px 0;padding:10px 14px;margin:8px 0}
+.output-label{font-family:'JetBrains Mono';font-size:10px;color:var(--org);letter-spacing:1px;font-weight:600;margin-bottom:4px}
+.output p{font-size:12px;color:#c0a888}
+
+.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin:10px 0}
+.file-card{background:rgba(10,16,28,0.5);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.file-name{font-family:'JetBrains Mono';font-size:11px;color:var(--ac2);font-weight:600}
+.file-desc{font-size:11px;color:var(--mt);margin-top:2px}
+.file-size{font-size:10px;color:#3a4a60;margin-top:2px}
+
+.summary{background:linear-gradient(135deg,rgba(232,125,13,0.06),rgba(78,205,196,0.04));border:1.5px solid rgba(232,125,13,0.25);border-radius:16px;padding:20px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="ctr">
+
+<div style="text-align:center;margin-bottom:8px">
+  <span class="badge" style="background:rgba(232,125,13,0.12);border:1px solid rgba(232,125,13,0.3);color:var(--org)">OPEN SOURCE</span>
+  <span class="badge" style="background:rgba(78,205,196,0.1);border:1px solid rgba(78,205,196,0.25);color:var(--ac)">$0 COST</span>
+  <span class="badge" style="background:rgba(91,164,245,0.1);border:1px solid rgba(91,164,245,0.25);color:var(--ac2)">360° + VR</span>
+</div>
+
+<h1>Blender + FloorplanToBlender3d</h1>
+<div class="sub">625 Ocean Street → True 3D Model with 360° Rotation</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <span style="font-size:12px;color:var(--mt)">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-text" id="progressText">0 / 7 steps</span>
+</div>
+
+<!-- STEP 1: Install Blender -->
+<div class="step open" data-step="1">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">1</div>
+    <div class="s-info">
+      <div class="s-title">Install Blender (Desktop)</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(78,205,196,0.1);color:var(--ac)">⏱ 5 min</span>
+        <span class="s-tag" style="background:rgba(91,164,245,0.1);color:var(--ac2)">ONE-TIME</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">DOWNLOAD</div>
+      <p>Get Blender 4.x (latest stable) from the official site. Free, no account needed.</p>
+      <p><a class="link" href="https://www.blender.org/download/" target="_blank">https://www.blender.org/download/</a></p>
+      <p style="font-size:12px;color:var(--mt);margin-top:6px">Windows installer recommended. ~350MB download. Requires 8GB RAM minimum, GPU with OpenGL 4.3+.</p>
+    </div>
+    <div class="warn">
+      <div class="warn-label">⚠ GPU CHECK</div>
+      <p>For Cycles rendering (photorealistic), you need a dedicated GPU (NVIDIA GTX 1060+ or AMD RX 580+). Integrated graphics will work for modeling but renders will be slow. Check: Edit → Preferences → System → CUDA/OptiX for NVIDIA.</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: Install FTBL -->
+<div class="step" data-step="2">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">2</div>
+    <div class="s-info">
+      <div class="s-title">Install FloorplanToBlender3d</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(78,205,196,0.1);color:var(--ac)">⏱ 10 min</span>
+        <span class="s-tag" style="background:rgba(232,125,13,0.1);color:var(--org)">PYTHON</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">CLONE REPO</div>
+      <p>Open terminal/PowerShell and clone the FloorplanToBlender3d repository:</p>
+      <div class="cmd">git clone https://github.com/grebtsew/FloorplanToBlender3d.git
+cd FloorplanToBlender3d<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    </div>
+    <div class="action">
+      <div class="action-label">INSTALL DEPENDENCIES</div>
+      <p>Requires Python 3.8+ and OpenCV:</p>
+      <div class="cmd">pip install -r requirements.txt<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+      <p style="font-size:11px;color:var(--mt);margin-top:4px">Key deps: opencv-python, numpy, matplotlib. If pip fails, try: <code style="color:var(--ac2)">pip install opencv-python numpy matplotlib</code></p>
+    </div>
+    <div class="action">
+      <div class="action-label">DOCKER ALTERNATIVE (easier)</div>
+      <p>If Python setup is painful, use the Docker container instead:</p>
+      <div class="cmd">docker pull grebtsew/floorplan-to-blender
+docker run -v $(pwd)/output:/output grebtsew/floorplan-to-blender<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3: Download Floor Plans -->
+<div class="step" data-step="3">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">3</div>
+    <div class="s-info">
+      <div class="s-title">Download 625 Ocean Floor Plans</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(78,205,196,0.1);color:var(--ac)">⏱ 2 min</span>
+        <span class="s-tag" style="background:rgba(78,205,196,0.1);color:var(--ac)">✅ ALREADY DEPLOYED</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">YOUR FLOOR PLANS (3 VERSIONS EACH)</div>
+      <p>All pre-processed and pushed to your GitHub repo. Download the <strong>_clean.png</strong> versions for best FTBL results:</p>
+    </div>
+    <div class="files-grid">
+      <div class="file-card">
+        <div class="file-name">A3_Level1_clean.png</div>
+        <div class="file-desc">First Level — grayscale, high contrast</div>
+        <div class="file-size">494KB • 6624×3792px</div>
+      </div>
+      <div class="file-card">
+        <div class="file-name">A4_Level2_clean.png</div>
+        <div class="file-desc">Second Level — grayscale, high contrast</div>
+        <div class="file-size">491KB • 6624×3792px</div>
+      </div>
+      <div class="file-card">
+        <div class="file-name">A5_Level3_clean.png</div>
+        <div class="file-desc">Third Level — grayscale, high contrast</div>
+        <div class="file-size">256KB • 6624×3792px</div>
+      </div>
+    </div>
+    <div class="cmd">git clone https://github.com/breverdbidder/625-ocean-ave-maket-guide.git
+cd 625-ocean-ave-maket-guide/blender_ftbl/<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    <div class="warn">
+      <div class="warn-label">FALLBACK FILES</div>
+      <p><strong>_bw.png</strong> = pure black/white (if FTBL struggles with clean version)<br>
+      <strong>_color.png</strong> = full color crop (for visual reference while modeling)</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4: Run FTBL -->
+<div class="step" data-step="4">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">4</div>
+    <div class="s-info">
+      <div class="s-title">Run FloorplanToBlender3d (Auto-Convert)</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(232,125,13,0.1);color:var(--org)">⏱ 15-30 min</span>
+        <span class="s-tag" style="background:rgba(240,192,64,0.1);color:var(--wrn)">CORE STEP</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">CONVERT LEVEL 1 (A3)</div>
+      <p>From the FloorplanToBlender3d directory, run the converter on your first floor plan:</p>
+      <div class="cmd">python create_blender_project_from_floorplan.py<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+      <p style="font-size:12px;color:var(--mt)">When prompted:</p>
+      <div class="cmd"># Enter image path:
+../625-ocean-ave-maket-guide/blender_ftbl/A3_Level1_clean.png
+
+# Enter wall height (meters):
+3.0
+
+# Use default config? 
+y<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    </div>
+    <div class="action">
+      <div class="action-label">REPEAT FOR ALL 3 LEVELS</div>
+      <p>Run the same script for A4_Level2 and A5_Level3. Use these wall heights:</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">
+        <div class="file-card">
+          <div class="file-name">Level 1 (A3)</div>
+          <div class="file-desc">Wall height: <strong style="color:var(--ac)">3.0m</strong> (10ft)</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">Level 2 (A4)</div>
+          <div class="file-desc">Wall height: <strong style="color:var(--ac)">2.7m</strong> (9ft)</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">Level 3 (A5)</div>
+          <div class="file-desc">Wall height: <strong style="color:var(--ac)">2.4m</strong> (8ft)</div>
+        </div>
+      </div>
+    </div>
+    <div class="action">
+      <div class="action-label">STACKING (MULTI-STORY)</div>
+      <p>Use the StackingFile feature to combine all 3 floors into one building. Create a stacking file:</p>
+      <div class="cmd"># Create file: 625_ocean.stack
+# Format: image_path, wall_height, floor_offset
+
+A3_Level1_clean.png, 3.0, 0.0
+A4_Level2_clean.png, 2.7, 3.0
+A5_Level3_clean.png, 2.4, 5.7<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    </div>
+    <div class="output">
+      <div class="output-label">OUTPUT</div>
+      <p>Creates <strong>floorplan.blender</strong> file with 3D rooms for each level. Open in Blender to see the auto-generated 3D model with walls, rooms, and floor plates.</p>
+    </div>
+    <div class="warn">
+      <div class="warn-label">⚠ IF WALLS DON'T DETECT PROPERLY</div>
+      <p>1. Try the <strong>_bw.png</strong> version (pure black/white)<br>
+      2. Adjust config: set <code style="color:var(--ac2)">wall_color_threshold</code> in the config file<br>
+      3. Manual cleanup: FTBL gets ~70-80% right, you'll refine in Blender</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5: Refine in Blender -->
+<div class="step" data-step="5">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">5</div>
+    <div class="s-info">
+      <div class="s-title">Refine 3D Model in Blender</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(232,125,13,0.1);color:var(--org)">⏱ 1-2 hours</span>
+        <span class="s-tag" style="background:rgba(240,192,64,0.1);color:var(--wrn)">CREATIVE</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">OPEN THE GENERATED FILE</div>
+      <p>File → Open → <code style="color:var(--ac2)">floorplan.blender</code></p>
+      <p>You'll see the auto-generated 3D rooms. Now refine:</p>
+    </div>
+    <div class="action">
+      <div class="action-label">CHECKLIST</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin:8px 0">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Fix any walls FTBL missed or misaligned
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Add windows (reference A1/A2 elevation images)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Add doors at correct locations
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Add staircase between floors
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Add roof geometry (reference A1/A2 for slope)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Apply materials (concrete, glass, wood)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Add exterior balconies/deck from elevations
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--ac)"> Position camera for 360° orbit path
+        </label>
+      </div>
+    </div>
+    <div class="output">
+      <div class="output-label">PRO TIP — USE ELEVATION IMAGES AS REFERENCE</div>
+      <p>In Blender: drag A1/A2 elevation PNGs onto planes → position as reference images on the X and Y axes → model exterior to match exactly. Shortcut: <code style="color:var(--ac2)">Shift+A → Image → Reference</code></p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 6: Render -->
+<div class="step" data-step="6">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">6</div>
+    <div class="s-info">
+      <div class="s-title">Render Photorealistic Images + 360° Animation</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(232,125,13,0.1);color:var(--org)">⏱ 30-60 min</span>
+        <span class="s-tag" style="background:rgba(78,205,196,0.1);color:var(--ac)">THE MONEY SHOT</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">CYCLES RENDER SETTINGS</div>
+      <p>Switch to Cycles for photorealistic output:</p>
+      <div class="cmd"># In Blender:
+# Render Properties (camera icon) →
+#   Render Engine: Cycles
+#   Device: GPU Compute
+#   Sampling: 256 samples (quality) or 64 (preview)
+#   Resolution: 3840 x 2160 (4K)
+#   Film: Transparent (for compositing)<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    </div>
+    <div class="action">
+      <div class="action-label">360° TURNTABLE ANIMATION</div>
+      <p>Create a camera orbiting the house for a 360° rotation video:</p>
+      <div class="cmd"># 1. Add Empty at building center: Shift+A → Empty → Plain Axes
+# 2. Select Camera → Ctrl+click Empty → Ctrl+P → "Object"
+# 3. Select Empty → Insert Keyframe (I) → Rotation
+#    Frame 1: Z Rotation = 0°
+#    Frame 120: Z Rotation = 360°
+# 4. Set timeline: 1-120 frames, 30fps = 4 second orbit
+# 5. Render → Render Animation (Ctrl+F12)<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+    </div>
+    <div class="action">
+      <div class="action-label">HERO SHOTS TO RENDER</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
+        <div class="file-card"><div class="file-name">East Elevation (Ocean Side)</div><div class="file-desc">Golden hour lighting, facing ocean</div></div>
+        <div class="file-card"><div class="file-name">South Elevation (Street)</div><div class="file-desc">Midday, curb appeal shot</div></div>
+        <div class="file-card"><div class="file-name">Bird's Eye (45° above)</div><div class="file-desc">Shows roof + full footprint</div></div>
+        <div class="file-card"><div class="file-name">Interior Walkthrough</div><div class="file-desc">First-person camera through rooms</div></div>
+      </div>
+    </div>
+    <div class="output">
+      <div class="output-label">OUTPUT</div>
+      <p>4K photorealistic renders (PNG) + 360° rotation video (MP4). Cycles quality rivals V-Ray/Corona at $0.</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 7: Export -->
+<div class="step" data-step="7">
+  <div class="step-hd" onclick="toggleStep(this)">
+    <div class="s-num">7</div>
+    <div class="s-info">
+      <div class="s-title">Export for Web 360° Viewer + VR</div>
+      <div class="s-meta">
+        <span class="s-tag" style="background:rgba(91,164,245,0.1);color:var(--ac2)">⏱ 20 min</span>
+        <span class="s-tag" style="background:rgba(78,205,196,0.1);color:var(--ac)">SHARE ANYWHERE</span>
+      </div>
+    </div>
+    <div class="s-chk" onclick="event.stopPropagation();toggleDone(this)">✓</div>
+    <div class="s-arrow">▼</div>
+  </div>
+  <div class="s-body">
+    <div class="action">
+      <div class="action-label">EXPORT FORMATS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
+        <div class="file-card">
+          <div class="file-name">glTF (.glb)</div>
+          <div class="file-desc">Web viewer — Three.js, model-viewer, GitHub Pages</div>
+          <div class="file-size">File → Export → glTF 2.0</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">OBJ (.obj)</div>
+          <div class="file-desc">Universal 3D — Sweet Home 3D, other tools</div>
+          <div class="file-size">File → Export → Wavefront</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">FBX (.fbx)</div>
+          <div class="file-desc">Unity / Unreal Engine — VR walkthrough</div>
+          <div class="file-size">File → Export → FBX</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">STL (.stl)</div>
+          <div class="file-desc">3D printing a physical model</div>
+          <div class="file-size">File → Export → STL</div>
+        </div>
+      </div>
+    </div>
+    <div class="action">
+      <div class="action-label">BROWSER-BASED 360° VIEWER (INSTANT)</div>
+      <p>Use Google's &lt;model-viewer&gt; — embed your .glb file in a single HTML page:</p>
+      <div class="cmd">&lt;!-- Add to any HTML page --&gt;
+&lt;script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0/model-viewer.min.js"&gt;&lt;/script&gt;
+
+&lt;model-viewer 
+  src="625_ocean.glb" 
+  alt="625 Ocean Street 3D Model"
+  auto-rotate 
+  camera-controls
+  shadow-intensity="1"
+  ar
+  style="width:100%;height:600px"&gt;
+&lt;/model-viewer&gt;<button class="copy-btn" onclick="copyCmd(this)">Copy</button></div>
+      <p style="font-size:12px;color:var(--mt);margin-top:6px">Deploy to GitHub Pages → anyone with the link can rotate, zoom, pan your 3D model in their browser. Works on mobile + supports AR on Android.</p>
+    </div>
+    <div class="output">
+      <div class="output-label">FINAL DELIVERABLES</div>
+      <p>✓ Blender source file (.blend) — editable 3D model<br>
+      ✓ 4K renders (4-6 hero images)<br>
+      ✓ 360° rotation video (MP4)<br>
+      ✓ Web viewer (GitHub Pages URL with interactive 3D)<br>
+      ✓ glTF export for VR headsets<br>
+      ✓ FBX for Unity/Unreal Engine VR walkthrough</p>
+    </div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <div style="font-family:'Outfit';font-weight:800;font-size:20px;color:#f0f4f8;margin-bottom:10px">
+    What You'll Have When Done
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px">
+    <div style="text-align:center;padding:12px">
+      <div style="font-size:28px;margin-bottom:4px">🔄</div>
+      <div style="font-family:'Outfit';font-weight:700;font-size:14px;color:var(--org)">360° Rotation</div>
+      <div style="font-size:11px;color:var(--mt)">Full orbit, zoom, pan</div>
+    </div>
+    <div style="text-align:center;padding:12px">
+      <div style="font-size:28px;margin-bottom:4px">📸</div>
+      <div style="font-family:'Outfit';font-weight:700;font-size:14px;color:var(--org)">Photorealistic</div>
+      <div style="font-size:11px;color:var(--mt)">Cycles cinema-quality</div>
+    </div>
+    <div style="text-align:center;padding:12px">
+      <div style="font-size:28px;margin-bottom:4px">🥽</div>
+      <div style="font-family:'Outfit';font-weight:700;font-size:14px;color:var(--org)">VR Ready</div>
+      <div style="font-size:11px;color:var(--mt)">FBX → Unity/Unreal</div>
+    </div>
+    <div style="text-align:center;padding:12px">
+      <div style="font-size:28px;margin-bottom:4px">🌐</div>
+      <div style="font-family:'Outfit';font-weight:700;font-size:14px;color:var(--org)">Web Viewer</div>
+      <div style="font-size:11px;color:var(--mt)">Shareable URL, mobile AR</div>
+    </div>
+  </div>
+  <div style="background:rgba(10,16,28,0.5);border-radius:10px;padding:14px;border:1px solid var(--bd)">
+    <div style="font-size:13px;color:#b0c4d8;line-height:1.6">
+      <strong style="color:var(--ac)">Total cost:</strong> $0 &nbsp;|&nbsp;
+      <strong style="color:var(--org)">Total time:</strong> ~3-4 hours (first time, faster after) &nbsp;|&nbsp;
+      <strong style="color:var(--ac2)">Quality:</strong> Cinema-grade (Cycles = V-Ray tier)<br>
+      <strong style="color:#f0f4f8">Next step after Blender:</strong> Feed renders into ComfyUI + ControlNet for AI-enhanced golden hour / dusk variations. Your Colab notebook is already deployed.
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toggleStep(hd) {
+  const step = hd.closest('.step');
+  document.querySelectorAll('.step.open').forEach(s => { if(s !== step) s.classList.remove('open'); });
+  step.classList.toggle('open');
+}
+
+function toggleDone(chk) {
+  const step = chk.closest('.step');
+  step.classList.toggle('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = document.querySelectorAll('.step').length;
+  const done = document.querySelectorAll('.step.done').length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = done + ' / ' + total + ' steps';
+}
+
+function copyCmd(btn) {
+  const cmd = btn.parentElement;
+  const text = cmd.textContent.replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.style.background = '#4ecdc4';
+    btn.style.color = '#080d17';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = ''; btn.style.color = ''; }, 1500);
+  });
+}
+</script>
+</body>
+</html>
