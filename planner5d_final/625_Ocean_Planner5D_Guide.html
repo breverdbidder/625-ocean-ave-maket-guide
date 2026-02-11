@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>625 Ocean St — Planner 5D Upload Guide</title>
+<style>
+:root{--bg:#080d17;--sf:#0e1626;--bd:#1a2a40;--tx:#e0e8f0;--mt:#5a7090;--ac:#4ecdc4;--p5d:#6C63FF;--wrn:#f0c040;--ok:#50c878}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:linear-gradient(160deg,var(--bg),var(--sf),var(--bg));color:var(--tx);min-height:100vh;padding:20px 14px;line-height:1.65}
+.c{max-width:800px;margin:0 auto}
+h1{font-weight:900;font-size:clamp(22px,4vw,30px);text-align:center;margin-bottom:4px;background:linear-gradient(135deg,var(--p5d),#a78bfa,var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{text-align:center;color:var(--mt);font-size:12px;margin-bottom:18px}
+
+.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:5px;letter-spacing:.5px}
+
+.prog{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.prog-track{flex:1;height:7px;background:var(--bd);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--p5d),var(--ac));border-radius:4px;transition:width .5s;width:0%}
+.prog-txt{font-size:12px;font-weight:700;color:var(--ac);white-space:nowrap}
+
+.step{background:var(--sf);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:all .2s}
+.step.done{border-color:var(--ok);opacity:.75}
+.step-h{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none}
+.step-n{width:30px;height:30px;border-radius:8px;background:rgba(108,99,255,.12);border:1.5px solid rgba(108,99,255,.35);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--p5d);flex-shrink:0}
+.step.done .step-n{background:var(--ok);border-color:var(--ok);color:#fff}
+.step-t{font-weight:700;font-size:14px;color:#f0f4f8;flex:1}
+.step-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
+.step-chk{width:20px;height:20px;border:2px solid var(--bd);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:transparent;transition:all .2s}
+.step-chk:hover{border-color:var(--ac)}
+.step.done .step-chk{background:var(--ok);border-color:var(--ok);color:#fff}
+.arr{color:var(--mt);font-size:12px;transition:transform .2s}
+.step.open .arr{transform:rotate(180deg)}
+.step-b{padding:0 16px 14px;display:none}
+.step.open .step-b{display:block}
+
+.act{background:rgba(108,99,255,.04);border:1px solid rgba(108,99,255,.15);border-radius:9px;padding:11px 13px;margin-bottom:8px}
+.act-l{font-size:9px;color:var(--p5d);letter-spacing:1px;font-weight:700;margin-bottom:5px}
+.act p{font-size:13px;color:#b0c4d8;margin-bottom:5px}
+
+.warn{background:rgba(240,192,64,.05);border:1px solid rgba(240,192,64,.2);border-radius:8px;padding:9px 12px;margin:7px 0}
+.warn-l{font-size:9px;color:var(--wrn);letter-spacing:1px;font-weight:700;margin-bottom:3px}
+.warn p{font-size:12px;color:#b0a080}
+
+.dim-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.dim-table th{background:rgba(108,99,255,.1);color:var(--p5d);padding:6px 10px;text-align:left;font-size:11px;letter-spacing:.5px;border:1px solid var(--bd)}
+.dim-table td{padding:6px 10px;border:1px solid var(--bd);color:#a0b8cc}
+.dim-table td.val{font-weight:700;color:var(--ac);font-family:monospace}
+.dim-table tr:nth-child(even) td{background:rgba(10,16,28,.3)}
+
+.file-row{display:flex;align-items:center;gap:10px;background:rgba(10,16,28,.4);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin:6px 0}
+.file-icon{font-size:22px}
+.file-info{flex:1}
+.file-name{font-weight:700;font-size:13px;color:#d0dce8}
+.file-meta{font-size:10px;color:var(--mt)}
+.file-upload{font-size:10px;font-weight:700;color:var(--p5d);padding:4px 10px;border:1px solid rgba(108,99,255,.3);border-radius:5px}
+
+.combo{background:linear-gradient(135deg,rgba(108,99,255,.06),rgba(78,205,196,.04));border:1.5px solid rgba(108,99,255,.25);border-radius:14px;padding:18px;margin-top:16px}
+.combo h2{font-size:18px;font-weight:800;color:#f0f4f8;margin-bottom:10px}
+
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0;justify-content:center}
+.flow-item{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;text-align:center;min-width:100px}
+.flow-item .fi-title{font-weight:700;font-size:12px;color:#d0dce8}
+.flow-item .fi-sub{font-size:10px;color:var(--mt)}
+.flow-arrow{color:var(--p5d);font-weight:800;font-size:16px}
+</style>
+</head>
+<body>
+<div class="c">
+
+<div class="badges">
+  <span class="badge" style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);color:var(--p5d)">PLANNER 5D</span>
+  <span class="badge" style="background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.25);color:var(--ac)">$4.99/mo</span>
+  <span class="badge" style="background:rgba(80,200,120,.1);border:1px solid rgba(80,200,120,.25);color:var(--ok)">AI RECOGNITION</span>
+</div>
+
+<h1>625 Ocean Street → Planner 5D</h1>
+<div class="sub">AI-detected doors, windows, rooms → export OBJ → Blender 360° + Cycles rendering</div>
+
+<div class="prog">
+  <span style="font-size:11px;color:var(--mt)">Progress</span>
+  <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
+  <span class="prog-txt" id="pt">0 / 8</span>
+</div>
+
+<!-- STEP 1 -->
+<div class="step open" data-step="1">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">1</div>
+    <div class="step-t">Sign Up for Planner 5D Premium</div>
+    <span class="step-tag" style="background:rgba(108,99,255,.1);color:var(--p5d)">⏱ 3 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">SIGN UP</div>
+      <p>Go to <a href="https://planner5d.com/pricing" target="_blank" style="color:var(--p5d)">planner5d.com/pricing</a></p>
+      <p>Select <strong>Premium — $4.99/mo</strong> (annual) or $19.99 monthly.</p>
+      <p style="font-size:11px;color:var(--mt)">Premium includes: AI floor plan recognition, 8,000+ furniture items, 5 renders/month, texture editing.</p>
+    </div>
+    <div class="warn">
+      <div class="warn-l">💡 PRO PLAN ($33.33/mo) ADDS</div>
+      <p>Unlimited 4K renders, 360° panoramas, custom 3D model import (OBJ), moodboards. Consider if you want the full 360° panorama built-in without Blender.</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" data-step="2">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">2</div>
+    <div class="step-t">Download Your Prepped Floor Plans</div>
+    <span class="step-tag" style="background:rgba(80,200,120,.1);color:var(--ok)">✅ READY</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">YOUR OPTIMIZED FILES (download all 5)</div>
+      <p>These are cropped, enhanced, and sized specifically for Planner 5D's AI recognition limits (max 8192px, under 16MB).</p>
+    </div>
+
+    <div class="file-row">
+      <div class="file-icon">📐</div>
+      <div class="file-info">
+        <div class="file-name">A3_Level1_First_Floor.jpg</div>
+        <div class="file-meta">7500×5057px • 2.4MB • Garage, Entry, Wet Bar, Rec Room, Office, Bedroom</div>
+      </div>
+      <div class="file-upload">UPLOAD 1st</div>
+    </div>
+    <div class="file-row">
+      <div class="file-icon">📐</div>
+      <div class="file-info">
+        <div class="file-name">A4_Level2_Second_Floor.jpg</div>
+        <div class="file-meta">7500×5057px • 2.4MB • Great Room, Kitchen, Dining, Master Suite, Balconies</div>
+      </div>
+      <div class="file-upload">UPLOAD 2nd</div>
+    </div>
+    <div class="file-row">
+      <div class="file-icon">📐</div>
+      <div class="file-info">
+        <div class="file-name">A5_Level3_Third_Floor.jpg</div>
+        <div class="file-meta">7500×5057px • 1.4MB • Bedrooms, Bathrooms, Bonus Room</div>
+      </div>
+      <div class="file-upload">UPLOAD 3rd</div>
+    </div>
+    <div class="file-row" style="opacity:.6">
+      <div class="file-icon">🏠</div>
+      <div class="file-info">
+        <div class="file-name">A1_Elevations_East_South.jpg</div>
+        <div class="file-meta">7500×5028px • 2.3MB • REFERENCE ONLY — verify doors/windows after AI scan</div>
+      </div>
+      <div class="file-upload" style="color:var(--wrn);border-color:rgba(240,192,64,.3)">REF</div>
+    </div>
+    <div class="file-row" style="opacity:.6">
+      <div class="file-icon">🏠</div>
+      <div class="file-info">
+        <div class="file-name">A2_Elevations_West_North.jpg</div>
+        <div class="file-meta">7500×5028px • 1.2MB • REFERENCE ONLY — verify doors/windows after AI scan</div>
+      </div>
+      <div class="file-upload" style="color:var(--wrn);border-color:rgba(240,192,64,.3)">REF</div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step" data-step="3">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">3</div>
+    <div class="step-t">Upload Level 1 (A3) — First Floor</div>
+    <span class="step-tag" style="background:rgba(240,192,64,.1);color:var(--wrn)">⏱ 10-15 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">STEP-BY-STEP IN PLANNER 5D</div>
+      <p><strong>1.</strong> Click <strong>"My Projects"</strong> → <strong>"New Project"</strong> → <strong>"Upload a Plan"</strong></p>
+      <p><strong>2.</strong> Select <strong>A3_Level1_First_Floor.jpg</strong> from your downloads</p>
+      <p><strong>3.</strong> <strong>Resize/frame</strong> — make sure the entire floor plan fills the frame. Crop out any remaining border if needed.</p>
+      <p><strong>4.</strong> Click <strong>"Next"</strong> or <strong>"Select Photo"</strong></p>
+    </div>
+    <div class="warn">
+      <div class="warn-l">⚠️ CRITICAL — WALL DIMENSION PROMPT</div>
+      <p>Planner 5D will ask you to set <strong>one wall dimension</strong>. This calibrates the entire plan. Use one of these known dimensions from the A3 drawing:</p>
+    </div>
+    <table class="dim-table">
+      <tr><th>WALL / ROOM</th><th>DIMENSION</th><th>ENTER AS</th></tr>
+      <tr><td>Overall house width</td><td class="val">118'-0"</td><td class="val">118 ft / 35.97m</td></tr>
+      <tr><td>Garage/Storage width</td><td class="val">20'-0"</td><td class="val">20 ft / 6.1m</td></tr>
+      <tr><td>Entry Porch width</td><td class="val">20'-0"</td><td class="val">20 ft / 6.1m</td></tr>
+      <tr><td>Rec Room width</td><td class="val">20'-0"</td><td class="val">20 ft / 6.1m</td></tr>
+      <tr><td>Office Area width</td><td class="val">12'-4"</td><td class="val">12.33 ft / 3.76m</td></tr>
+      <tr><td>Bedroom Area width</td><td class="val">19'-4"</td><td class="val">19.33 ft / 5.89m</td></tr>
+    </table>
+    <div class="act" style="margin-top:8px">
+      <div class="act-l">AFTER UPLOAD</div>
+      <p><strong>5.</strong> Wait for AI processing (1-15 min, email notification when done)</p>
+      <p><strong>6.</strong> Review the generated plan — check walls, doors, rooms are detected correctly</p>
+      <p><strong>7.</strong> Name the project: <strong>"625 Ocean - Level 1"</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step" data-step="4">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">4</div>
+    <div class="step-t">Upload Level 2 (A4) — Second Floor</div>
+    <span class="step-tag" style="background:rgba(240,192,64,.1);color:var(--wrn)">⏱ 10-15 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">SAME PROCESS — NEW PROJECT</div>
+      <p>Create another new project → Upload <strong>A4_Level2_Second_Floor.jpg</strong></p>
+    </div>
+    <table class="dim-table">
+      <tr><th>WALL / ROOM</th><th>DIMENSION</th><th>ENTER AS</th></tr>
+      <tr><td>Overall house width</td><td class="val">118'-0"</td><td class="val">118 ft / 35.97m</td></tr>
+      <tr><td>Great Room width</td><td class="val">21'-0"</td><td class="val">21 ft / 6.4m</td></tr>
+      <tr><td>Kitchen area</td><td class="val">21'-0"</td><td class="val">21 ft / 6.4m</td></tr>
+      <tr><td>Master Suite</td><td class="val">34'-0"</td><td class="val">34 ft / 10.36m</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--mt);margin-top:8px">Name: <strong>"625 Ocean - Level 2"</strong></p>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div class="step" data-step="5">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">5</div>
+    <div class="step-t">Upload Level 3 (A5) — Third Floor</div>
+    <span class="step-tag" style="background:rgba(240,192,64,.1);color:var(--wrn)">⏱ 10-15 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">SAME PROCESS — NEW PROJECT</div>
+      <p>Create another new project → Upload <strong>A5_Level3_Third_Floor.jpg</strong></p>
+    </div>
+    <table class="dim-table">
+      <tr><th>WALL / ROOM</th><th>DIMENSION</th><th>ENTER AS</th></tr>
+      <tr><td>Overall house width</td><td class="val">118'-0"</td><td class="val">118 ft / 35.97m</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--mt);margin-top:8px">Name: <strong>"625 Ocean - Level 3"</strong></p>
+  </div>
+</div>
+
+<!-- STEP 6 -->
+<div class="step" data-step="6">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">6</div>
+    <div class="step-t">Review & Fix AI Recognition</div>
+    <span class="step-tag" style="background:rgba(108,99,255,.1);color:var(--p5d)">⏱ 15-20 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">VERIFY EACH LEVEL (use elevations as reference)</div>
+      <p>Open each project and check in 2D mode:</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px;margin:8px 0">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--p5d)"> All exterior walls detected correctly
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--p5d)"> Interior walls/partitions present
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--p5d)"> Doors placed at correct openings (check A1/A2 elevations)
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--p5d)"> Windows match elevation drawings
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--p5d)"> Room dimensions are accurate (±1 foot)
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a0b8cc;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--p5d)"> Stairs/elevator shaft positioned
+      </label>
+    </div>
+    <div class="warn">
+      <div class="warn-l">IF AI GOT IT WRONG</div>
+      <p>Rate the result low in the satisfaction survey (bottom-right) → plan gets sent for manual re-review by Planner 5D team. Or fix walls/doors manually in the 2D editor — drag to reposition, resize, or delete misplaced elements.</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 7 -->
+<div class="step" data-step="7">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">7</div>
+    <div class="step-t">Furnish & Style in 3D Mode</div>
+    <span class="step-tag" style="background:rgba(108,99,255,.1);color:var(--p5d)">⏱ 30-60 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">SWITCH TO 3D VIEW</div>
+      <p>Click the <strong>3D toggle</strong> in Planner 5D to see your floor plan as a 3D room. Now:</p>
+      <p><strong>1.</strong> Add furniture from the 8,000+ item library (drag & drop)</p>
+      <p><strong>2.</strong> Apply materials — floors, wall colors, countertops</p>
+      <p><strong>3.</strong> Adjust window sizes and styles</p>
+      <p><strong>4.</strong> Set lighting for each room</p>
+      <p><strong>5.</strong> Take <strong>Snapshots</strong> (photorealistic renders with shadows + lighting)</p>
+    </div>
+    <div class="act">
+      <div class="act-l">360° PANORAMA (Pro plan only)</div>
+      <p>If on Pro plan: generate 360° panoramas for immersive VR viewing directly in Planner 5D.</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 8 -->
+<div class="step" data-step="8">
+  <div class="step-h" onclick="ts(this)">
+    <div class="step-n">8</div>
+    <div class="step-t">Export OBJ → Import to Blender</div>
+    <span class="step-tag" style="background:rgba(78,205,196,.1);color:var(--ac)">⏱ 10 min</span>
+    <div class="step-chk" onclick="event.stopPropagation();td(this)">✓</div>
+    <div class="arr">▼</div>
+  </div>
+  <div class="step-b">
+    <div class="act">
+      <div class="act-l">EXPORT FROM PLANNER 5D (Pro plan)</div>
+      <p>Pro plan supports OBJ export. If on Premium, use screenshots + Blender manual modeling instead.</p>
+      <p><strong>1.</strong> In Planner 5D: look for export/download options</p>
+      <p><strong>2.</strong> Export as <strong>.OBJ</strong> format</p>
+      <p><strong>3.</strong> Save each level separately</p>
+    </div>
+    <div class="act">
+      <div class="act-l">IMPORT TO BLENDER</div>
+      <p><strong>1.</strong> Open Blender → File → Import → Wavefront (.obj)</p>
+      <p><strong>2.</strong> Import Level 1 → position at Z=0</p>
+      <p><strong>3.</strong> Import Level 2 → position at Z=3.0m</p>
+      <p><strong>4.</strong> Import Level 3 → position at Z=5.7m</p>
+      <p><strong>5.</strong> Use the <strong>import_625_ocean.py</strong> Blender script (already in your GitHub repo) for automatic camera + lighting + 360° animation setup</p>
+    </div>
+    <div class="act">
+      <div class="act-l">ALTERNATIVE: SCREENSHOTS → COMFYUI</div>
+      <p>Even on Premium plan without OBJ export: take high-quality 3D screenshots from multiple angles → feed into your ComfyUI Colab notebook → ControlNet produces photorealistic renders from the 3D views.</p>
+    </div>
+  </div>
+</div>
+
+<!-- COMBO PIPELINE -->
+<div class="combo">
+  <h2>The Complete Pipeline</h2>
+  <div class="flow">
+    <div class="flow-item">
+      <div class="fi-title">EDC Plans</div>
+      <div class="fi-sub">A3 + A4 + A5</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:rgba(108,99,255,.3)">
+      <div class="fi-title" style="color:var(--p5d)">Planner 5D</div>
+      <div class="fi-sub">AI Recognition<br>Doors + Windows</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:rgba(232,125,13,.3)">
+      <div class="fi-title" style="color:#E87D0D">Blender</div>
+      <div class="fi-sub">360° Orbit<br>Cycles Render</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:rgba(78,205,196,.3)">
+      <div class="fi-title" style="color:var(--ac)">ComfyUI</div>
+      <div class="fi-sub">AI Enhanced<br>Golden Hour</div>
+    </div>
+  </div>
+
+  <div style="background:rgba(10,16,28,.5);border-radius:9px;padding:12px;margin-top:12px;border:1px solid var(--bd)">
+    <div style="font-size:13px;color:#b0c4d8;line-height:1.7">
+      <strong style="color:var(--p5d)">Planner 5D:</strong> AI detects doors, windows, rooms → furnished 3D interior<br>
+      <strong style="color:#E87D0D">Blender:</strong> True 360° orbit, cinema Cycles rendering, VR export<br>
+      <strong style="color:var(--ac)">ComfyUI:</strong> ControlNet photorealistic exterior renders (Colab already deployed)<br><br>
+      <strong style="color:#f0f4f8">Total cost:</strong> $4.99/mo Planner 5D + $0 Blender + $0 ComfyUI = <strong style="color:var(--ac)">$4.99/mo</strong><br>
+      <strong style="color:#f0f4f8">Deliverables:</strong> Furnished 3D model, 360° rotation, 4K renders, VR walkthrough, web viewer
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function ts(h){const s=h.closest('.step');document.querySelectorAll('.step.open').forEach(x=>{if(x!==s)x.classList.remove('open')});s.classList.toggle('open')}
+function td(c){c.closest('.step').classList.toggle('done');up()}
+function up(){const t=document.querySelectorAll('.step').length,d=document.querySelectorAll('.step.done').length;document.getElementById('pf').style.width=Math.round(d/t*100)+'%';document.getElementById('pt').textContent=d+' / '+t}
+</script>
+</body>
+</html>
